@@ -98,6 +98,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
     // Each lane processes one entry
+       __syncthreads();
 
     for(unsigned int j = lid; j < LTABLE_SIZE; j += WFSIZE)
     {

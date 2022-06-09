@@ -395,7 +395,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     {
         if(handle->wavefront_size == 32)
         {
-#define USE_ORG
+#undef USE_ORG
 #if defined(USE_ORG)
             if(max_nnz <= 32)
             {
@@ -519,9 +519,9 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
             }
 #else
 
-                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
+                hipLaunchKernelGGL((csrilu0_hash<32, 32, 1>),
+                                   dim3(m), // csrilu0_blocks,
+                                   dim3(32), // csrilu0_threads,
                                    0,
                                    stream,
                                    m,
@@ -663,9 +663,9 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
             }
 #else
 
-                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
+                hipLaunchKernelGGL((csrilu0_hash<64, 64, 1>),
+                                   dim3(m), // csrilu0_blocks,
+                                   dim3(64), // csrilu0_threads,
                                    0,
                                    stream,
                                    m,
