@@ -42,11 +42,14 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                                     U                    boost_tol,
                                     T                    boost_val)
 {
-    int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x % WFSIZE;
     int wid = hipThreadIdx_x / WFSIZE;
 
-    int constexpr TABLE_SIZE = BLOCKSIZE * HASH;
-    int constexpr LTABLE_SIZE = WFSIZE * HASH;
+    int constexpr MAXNZ = WFSIZE * HASH;
+    int constexpr LTABLE_SIZE = 2 * MAXNZ;
+    int constexpr WARPSIZE = WFSIZE;
+    int constexpr NWARPS =  BLOCKSIZE / WARPSIZE;
+    int constexpr TABLE_SIZE =  NWARPS * LTABLE_SIZE;
 
     __shared__ rocsparse_int stable[TABLE_SIZE];
     __shared__ rocsparse_int sdata[TABLE_SIZE];
@@ -78,11 +81,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
     rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
     rocsparse_int const row_nz = row_end - row_begin;
 
-    // Fill hash table
-    // Loop over columns of current row and fill hash table with row dependencies
-    // Each lane processes one entry
 
-    int constexpr MAXNZ = LTABLE_SIZE/2;
 
     auto min = [](rocsparse_int const ix, rocsparse_int const iy) -> rocsparse_int {
                return(  (ix < iy) ? ix : iy );
@@ -91,10 +90,14 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                return(  (n + (nb-1))/nb );
                };
 
-    int const nsweeps = iceil( row_nz, MAXNZ );
-    for(int isweep=0; isweep < nsweeps; isweep++) {
+    auto const nsweeps = iceil( row_nz, MAXNZ );
+    for(auto isweep=0; isweep < nsweeps; isweep++) {
       rocsparse_int const irow_begin = row_begin + isweep * MAXNZ;
       rocsparse_int const irow_end = min(irow_begin + MAXNZ,row_end);
+
+    // Fill hash table
+    // Loop over columns of current row and fill hash table with row dependencies
+    // Each lane processes one entry
 
     for(unsigned int j = lid; j < LTABLE_SIZE; j += WFSIZE)
     {
@@ -108,10 +111,11 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
         // Insert key into hash table
         rocsparse_int key = csr_col_ind[j];
         // Compute hash
-        rocsparse_int hash = (key * 103) & (LTABLE_SIZE- 1);
+        rocsparse_int hash = (key * 103) % (LTABLE_SIZE);
 
         // Hash operation
-        while(true)
+        // while(true)
+        for(auto i=0; i <= LTABLE_SIZE; i++) 
         {
             if(table[hash] == key)
             {
@@ -127,7 +131,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
             else
             {
                 // collision, compute new hash
-                hash = (hash + 1) & (LTABLE_SIZE - 1);
+                hash = (hash + 1) % (LTABLE_SIZE);
             }
         }
     }
@@ -174,7 +178,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 
             if(lid == 0)
             {
-                csr_val[local_diag] = diag_val;
+                  csr_val[local_diag] = diag_val;
             }
         }
         else
@@ -193,20 +197,30 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
             }
         }
 
-        csr_val[j] = local_val = local_val / diag_val;
+        // csr_val[j] = local_val = local_val / diag_val;
+        local_val = local_val / diag_val;
+        {
+        bool const is_in_sweep = (irow_begin <= j) && (j < irow_end);
+        if (is_in_sweep) {
+             csr_val[ j ] = local_val;
+             };
+        };
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry
         for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
         {
+
             // Get value from hash table
             rocsparse_int key = csr_col_ind[k];
 
             // Compute hash
-            rocsparse_int hash = (key * 103) & (LTABLE_SIZE - 1);
+            rocsparse_int hash = (key * 103) % (LTABLE_SIZE);
 
             // Hash operation
-            while(true)
+            //while(true)
+            rocsparse_int idx_data = -1;
+            for(auto i=0; i <= LTABLE_SIZE; i++)
             {
                 if(table[hash] == INVALID_KEY)
                 {
@@ -216,16 +230,23 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                 else if(table[hash] == key)
                 {
                     // Entry found, do ILU computation
-                    rocsparse_int idx_data = data[hash];
-                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
+                    idx_data = data[hash];
                     break;
                 }
                 else
                 {
                     // Collision, compute new hash
-                    hash = (hash + 1) & (LTABLE_SIZE - 1);
+                    hash = (hash + 1) % (LTABLE_SIZE);
                 }
-            }
+            }; // end for 
+
+            bool const is_found = (idx_data != -1);
+            bool const is_in_sweep = (irow_begin <= idx_data) && 
+                                     (idx_data < irow_end);
+            if (is_found && is_in_sweep) {
+                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
+               };
+
         }
     }
 
@@ -245,194 +266,6 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 
 
 
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T, typename U>
-__device__ void csrilu0_hash_kernel_org(rocsparse_int m,
-                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                    T* __restrict__ csr_val,
-                                    const rocsparse_int* __restrict__ csr_diag_ind,
-                                    int* __restrict__ done,
-                                    const rocsparse_int* __restrict__ map,
-                                    rocsparse_int* __restrict__ zero_pivot,
-                                    rocsparse_index_base idx_base,
-                                    int                  boost,
-                                    U                    boost_tol,
-                                    T                    boost_val)
-{
-    int lid = hipThreadIdx_x & (WFSIZE - 1);
-    int wid = hipThreadIdx_x / WFSIZE;
-
-    __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
-    __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
-
-    // Pointer to each wavefronts shared data
-    rocsparse_int* table = &stable[wid * WFSIZE * HASH];
-    rocsparse_int* data  = &sdata[wid * WFSIZE * HASH];
-
-    // Initialize hash table with -1
-    for(unsigned int j = lid; j < WFSIZE * HASH; j += WFSIZE)
-    {
-        table[j] = -1;
-    }
-
-    __threadfence_block();
-
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
-
-    // Do not run out of bounds
-    if(idx >= m)
-    {
-        return;
-    }
-
-    // Current row this wavefront is working on
-    rocsparse_int row = map[idx];
-
-    // Diagonal entry point of the current row
-    rocsparse_int row_diag = csr_diag_ind[row];
-
-    // Row entry point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
-
-    // Fill hash table
-    // Loop over columns of current row and fill hash table with row dependencies
-    // Each lane processes one entry
-    for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
-    {
-        // Insert key into hash table
-        rocsparse_int key = csr_col_ind[j];
-        // Compute hash
-        rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
-
-        // Hash operation
-        while(true)
-        {
-            if(table[hash] == key)
-            {
-                // key is already inserted, done
-                break;
-            }
-            else if(atomicCAS(&table[hash], -1, key) == -1)
-            {
-                // inserted key into the table, done
-                data[hash] = j;
-                break;
-            }
-            else
-            {
-                // collision, compute new hash
-                hash = (hash + 1) & (WFSIZE * HASH - 1);
-            }
-        }
-    }
-
-    __threadfence_block();
-
-    // Loop over column of current row
-    for(rocsparse_int j = row_begin; j < row_diag; ++j)
-    {
-        // Column index currently being processes
-        rocsparse_int local_col = csr_col_ind[j] - idx_base;
-
-        // Corresponding value
-        T local_val = csr_val[j];
-
-        // End of the row that corresponds to local_col
-        rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
-
-        // Diagonal entry point of row local_col
-        rocsparse_int local_diag = csr_diag_ind[local_col];
-
-        // Structural zero pivot, do not process this row
-        if(local_diag == -1)
-        {
-            local_diag = local_end - 1;
-        }
-
-        // Spin loop until dependency has been resolved
-        while(!atomicOr(&done[local_col], 0))
-            ;
-
-        // Make sure updated csr_val is visible
-        __threadfence();
-
-        // Load diagonal entry
-        T diag_val = csr_val[local_diag];
-
-        // Numeric boost
-        if(boost)
-        {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
-
-            __threadfence();
-
-            if(lid == 0)
-            {
-                csr_val[local_diag] = diag_val;
-            }
-        }
-        else
-        {
-            // Row has numerical zero diagonal
-            if(diag_val == static_cast<T>(0))
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first zero pivot
-                    atomicMin(zero_pivot, local_col + idx_base);
-                }
-
-                // Skip this row if it has a zero pivot
-                break;
-            }
-        }
-
-        csr_val[j] = local_val = local_val / diag_val;
-
-        // Loop over the row the current column index depends on
-        // Each lane processes one entry
-        for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
-        {
-            // Get value from hash table
-            rocsparse_int key = csr_col_ind[k];
-
-            // Compute hash
-            rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
-
-            // Hash operation
-            while(true)
-            {
-                if(table[hash] == -1)
-                {
-                    // No entry for the key, done
-                    break;
-                }
-                else if(table[hash] == key)
-                {
-                    // Entry found, do ILU computation
-                    rocsparse_int idx_data = data[hash];
-                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
-                    break;
-                }
-                else
-                {
-                    // Collision, compute new hash
-                    hash = (hash + 1) & (WFSIZE * HASH - 1);
-                }
-            }
-        }
-    }
-
-    // Make sure updated csr_val is written to global memory
-    __threadfence();
-
-    if(lid == 0)
-    {
-        // First lane writes "we are done" flag
-        atomicOr(&done[row], 1);
-    }
-}
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
 __device__ void csrilu0_binsearch_kernel(rocsparse_int m_,
