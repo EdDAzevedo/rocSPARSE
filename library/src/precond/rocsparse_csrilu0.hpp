@@ -395,6 +395,367 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     {
         if(handle->wavefront_size == 32)
         {
+#undefine USE_ORG
+#if defined(USE_ORG)
+            if(max_nnz <= 32)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 32, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+#else
+
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+#endif
+        }
+        else if(handle->wavefront_size == 64)
+        {
+#if defined(USE_ORG)
+            if(max_nnz <= 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else if(max_nnz <= 1024)
+            {
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+            }
+#else
+
+                hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 64, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                                   d_done_array,
+                                   (rocsparse_int*)info->csrilu0_info->row_map,
+                                   (rocsparse_int*)info->zero_pivot,
+                                   descr->base,
+                                   info->boost_enable,
+                                   boost_tol_device_host,
+                                   boost_val_device_host);
+#endif
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
+    }
+#undef CSRILU0_DIM
+
+    return rocsparse_status_success;
+}
+
+
+template <typename T, typename U, typename V>
+rocsparse_status rocsparse_csrilu0_dispatch_org(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             nnz,
+                                            const rocsparse_mat_descr descr,
+                                            T*                        csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_solve_policy    policy,
+                                            void*                     temp_buffer,
+                                            U                         boost_tol_device_host,
+                                            V                         boost_val_device_host)
+{
+    // Check for valid handle and matrix descriptor
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // Buffer
+    char* ptr = reinterpret_cast<char*>(temp_buffer);
+    ptr += 256;
+
+    // done array
+    int* d_done_array = reinterpret_cast<int*>(ptr);
+
+    // Initialize buffers
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(int) * m, stream));
+
+    // Max nnz per row
+    rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
+
+    // Determine gcnArch and ASIC revision
+    int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
+
+#define CSRILU0_DIM 256
+    dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
+    dim3 csrilu0_threads(CSRILU0_DIM);
+
+    if(gcnArch == 908 && asicRev < 2)
+    {
+        hipLaunchKernelGGL((csrilu0_binsearch<CSRILU0_DIM, 64, true>),
+                           csrilu0_blocks,
+                           csrilu0_threads,
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           (rocsparse_int*)info->csrilu0_info->trm_diag_ind,
+                           d_done_array,
+                           (rocsparse_int*)info->csrilu0_info->row_map,
+                           (rocsparse_int*)info->zero_pivot,
+                           descr->base,
+                           info->boost_enable,
+                           boost_tol_device_host,
+                           boost_val_device_host);
+    }
+    else
+    {
+        if(handle->wavefront_size == 32)
+        {
             if(max_nnz <= 32)
             {
                 hipLaunchKernelGGL((csrilu0_hash<CSRILU0_DIM, 32, 1>),
