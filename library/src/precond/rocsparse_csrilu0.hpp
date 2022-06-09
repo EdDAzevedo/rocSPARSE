@@ -395,7 +395,7 @@ rocsparse_status rocsparse_csrilu0_dispatch(rocsparse_handle          handle,
     {
         if(handle->wavefront_size == 32)
         {
-#undefine USE_ORG
+#define USE_ORG
 #if defined(USE_ORG)
             if(max_nnz <= 32)
             {

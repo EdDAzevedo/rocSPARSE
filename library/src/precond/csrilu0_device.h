@@ -82,7 +82,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
     // Loop over columns of current row and fill hash table with row dependencies
     // Each lane processes one entry
 
-    int constexpr MAXNZ = LTABLE_SIZE;
+    int constexpr MAXNZ = LTABLE_SIZE/2;
 
     auto min = [](rocsparse_int const ix, rocsparse_int const iy) -> rocsparse_int {
                return(  (ix < iy) ? ix : iy );
@@ -135,7 +135,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
     __threadfence_block();
 
     // Loop over column of current row
-    for(rocsparse_int j = irow_begin; j < min(row_diag,irow_end); ++j)
+    for(rocsparse_int j = row_begin; j < row_diag; ++j)
     {
         // Column index currently being processes
         rocsparse_int local_col = csr_col_ind[j] - idx_base;
@@ -203,7 +203,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
             rocsparse_int key = csr_col_ind[k];
 
             // Compute hash
-            rocsparse_int hash = (key * 103) & (WFSIZE * HASH - 1);
+            rocsparse_int hash = (key * 103) & (LTABLE_SIZE - 1);
 
             // Hash operation
             while(true)
@@ -223,7 +223,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                 else
                 {
                     // Collision, compute new hash
-                    hash = (hash + 1) & (WFSIZE * HASH - 1);
+                    hash = (hash + 1) & (LTABLE_SIZE - 1);
                 }
             }
         }
