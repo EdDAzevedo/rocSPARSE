@@ -95,15 +95,20 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
       rocsparse_int const irow_begin = row_begin + isweep * MAXNZ;
       rocsparse_int const irow_end = min(irow_begin + MAXNZ,row_end);
 
+      rocsparse_int const icolkey_begin = csr_col_ind[ irow_begin ];
+      rocsparse_int const icolkey_end   = csr_col_ind[ irow_end - 1 ];
+
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
     // Each lane processes one entry
-       __syncthreads();
+       if (NWARPS == 1) { __syncthreads(); };
 
-    for(unsigned int j = lid; j < LTABLE_SIZE; j += WFSIZE)
+    for(auto j = lid; j < LTABLE_SIZE; j += WFSIZE)
     {
         table[j] = INVALID_KEY;
     }
+
+       if (NWARPS == 1) { __syncthreads(); };
 
     __threadfence_block();
     
@@ -116,11 +121,13 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 
         // Hash operation
         // while(true)
+     
         for(auto i=0; i <= LTABLE_SIZE; i++) 
         {
             if(table[hash] == key)
             {
                 // key is already inserted, done
+                assert( data[hash] == j );
                 break;
             }
             else if(atomicCAS(&table[hash], INVALID_KEY, key) == INVALID_KEY)
@@ -136,6 +143,8 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
             }
         }
     }
+
+       if (NWARPS == 1) { __syncthreads(); };
 
     __threadfence_block();
 
@@ -161,7 +170,14 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        while(!atomicOr(&done[local_col], 0))
+        if (lid == 0) {
+          while(!atomicOr(&done[local_col], 0))
+            ;
+          };
+
+       if (NWARPS == 1) { __syncthreads(); };
+
+          while(!atomicOr(&done[local_col], 0))
             ;
 
         // Make sure updated csr_val is visible
@@ -214,6 +230,8 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 
             // Get value from hash table
             rocsparse_int key = csr_col_ind[k];
+            bool is_in_sweep = (icolkey_begin <= key) && (key <= icolkey_end);
+            if (is_in_sweep) {
 
             // Compute hash
             rocsparse_int hash = (key * 103) % (LTABLE_SIZE);
@@ -232,6 +250,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                 {
                     // Entry found, do ILU computation
                     idx_data = data[hash];
+                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
                     break;
                 }
                 else
@@ -239,17 +258,15 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                     // Collision, compute new hash
                     hash = (hash + 1) % (LTABLE_SIZE);
                 }
-            }; // end for 
+            }; // end for  i
 
-            bool const is_found = (idx_data != -1);
-            bool const is_in_sweep = (irow_begin <= idx_data) && 
-                                     (idx_data < irow_end);
-            if (is_found && is_in_sweep) {
-                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
-               };
+          };
 
-        }
-    }
+        }; // end for k
+
+       if (NWARPS == 1) { __syncthreads(); };
+
+    }; // end for j over current row
 
     // Make sure updated csr_val is written to global memory
     __threadfence();
@@ -263,6 +280,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
         // First lane writes "we are done" flag
         atomicOr(&done[row], 1);
     }
+    __threadfence();
 }
 
 
