@@ -161,7 +161,7 @@ void csric0_hash_kernel(rocsparse_int m,
         }
 
         // Row has numerical singular diagonal
-        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
+        if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= tol))
         {
             if(lid == 0)
             {
@@ -225,10 +225,10 @@ void csric0_hash_kernel(rocsparse_int m,
     {
         if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
-            T const diag_val = csr_val[row_diag] - sum;
+            const T diag_val = csr_val[row_diag] - sum;
 
             // test for negative value and numerical small value
-            if((std::imag(diag_val) == 0) && (std::real(diag_val) < tol * tol))
+            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol * tol)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             };
@@ -354,7 +354,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
         }
 
         // Row has numerical singular diagonal
-        if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
+        if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= tol))
         {
             if(lid == 0)
             {
@@ -422,10 +422,10 @@ void csric0_binsearch_kernel(rocsparse_int m,
     {
         if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
-            T const diag_val = csr_val[row_diag] - sum;
+            const T diag_val = csr_val[row_diag] - sum;
 
             // check for negative value and numerical small value
-            if((std::imag(diag_val) == 0) && (std::real(diag_val) < tol * tol))
+            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol * tol)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             };

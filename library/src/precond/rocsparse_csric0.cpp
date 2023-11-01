@@ -971,7 +971,7 @@ try
         return rocsparse_status_success;
     }
 
-    rocsparse_int const max_int        = std::numeric_limits<rocsparse_int>::max();
+    const rocsparse_int max_int        = std::numeric_limits<rocsparse_int>::max();
     rocsparse_int       zero_pivot     = max_int;
     rocsparse_int       singular_pivot = max_int;
 

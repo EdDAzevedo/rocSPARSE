@@ -71,14 +71,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int const row = map[idx];
+    const rocsparse_int row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int const row_diag = csr_diag_ind[row];
+    const rocsparse_int row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
+    const rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    const rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
@@ -161,7 +161,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         else
         {
             // Row has numerical singular diagonal
-            if(std::abs(diag_val) <= tol)
+            if(rocsparse_abs(diag_val) <= tol)
             {
                 if(lid == 0)
                 {
@@ -225,10 +225,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
 
     if(lid == 0)
     {
-        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        const bool is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
 
         {
-            bool const is_singular_pivot = is_diag && (std::abs(csr_val[row_diag]) <= tol);
+            const bool is_singular_pivot = is_diag && (rocsparse_abs(csr_val[row_diag]) <= tol);
             if(is_singular_pivot)
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
@@ -236,7 +236,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
         };
 
         {
-            bool const is_zero_pivot = is_diag && (csr_val[row_diag] == static_cast<T>(0));
+            const bool is_zero_pivot = is_diag && (csr_val[row_diag] == static_cast<T>(0));
             if(is_zero_pivot)
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
@@ -283,14 +283,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 
     // Current row this wavefront is working on
-    rocsparse_int const row = map[idx];
+    const rocsparse_int row = map[idx];
 
     // Diagonal entry point of the current row
-    rocsparse_int const row_diag = csr_diag_ind[row];
+    const rocsparse_int row_diag = csr_diag_ind[row];
 
     // Row entry point
-    rocsparse_int const row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int const row_end   = csr_row_ptr[row + 1] - idx_base;
+    const rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    const rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)
@@ -359,7 +359,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         else
         {
             // Row has numerical singular diagonal
-            if(std::abs(diag_val) <= tol)
+            if(rocsparse_abs(diag_val) <= tol)
             {
                 if(lid == 0)
                 {
@@ -427,10 +427,10 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     // check for singular_pivot
     if(lid == 0)
     {
-        bool const is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+        const bool is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
 
         {
-            bool const is_singular_pivot = (is_diag && (std::abs(csr_val[row_diag]) <= tol));
+            const bool is_singular_pivot = (is_diag && (rocsparse_abs(csr_val[row_diag]) <= tol));
             if(is_singular_pivot)
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
@@ -438,7 +438,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         };
 
         {
-            bool const is_zero_pivot = (is_diag && (csr_val[row_diag] == static_cast<T>(0)));
+            const bool is_zero_pivot = (is_diag && (csr_val[row_diag] == static_cast<T>(0)));
             if(is_zero_pivot)
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));

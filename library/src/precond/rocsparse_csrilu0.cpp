@@ -64,7 +64,6 @@ rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   han
         info->use_double_prec_tol = std::is_same<U, double>();
         info->boost_tol           = reinterpret_cast<const void*>(boost_tol);
         info->boost_val           = reinterpret_cast<const void*>(boost_val);
-
     }
 
     return rocsparse_status_success;
@@ -1010,7 +1009,7 @@ try
         return rocsparse_status_success;
     }
 
-    rocsparse_int const max_int        = std::numeric_limits<rocsparse_int>::max();
+    const rocsparse_int max_int        = std::numeric_limits<rocsparse_int>::max();
     rocsparse_int       zero_pivot     = max_int;
     rocsparse_int       singular_pivot = max_int;
 
