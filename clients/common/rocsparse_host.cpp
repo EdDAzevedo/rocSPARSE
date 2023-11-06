@@ -5680,10 +5680,10 @@ void host_csric0(rocsparse_int                     M,
                  double                            tol)
 {
     // Initialize pivot
-    rocsparse_int const max_int = std::numeric_limits<rocsparse_int>::max();
-    *struct_pivot               = max_int;
-    *numeric_pivot              = max_int;
-    *singular_pivot             = max_int;
+    constexpr rocsparse_int max_int = std::numeric_limits<rocsparse_int>::max();
+    *struct_pivot                   = max_int;
+    *numeric_pivot                  = max_int;
+    *singular_pivot                 = max_int;
 
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_offset(M);
@@ -5751,7 +5751,7 @@ void host_csric0(rocsparse_int                     M,
             {
 
                 inv_diag = static_cast<T>(1) / diag_val;
-            };
+            }
 
             // loop over upper offset pointer and do linear combination for nnz entry
             for(rocsparse_int k = row_begin_j; k < row_diag_j; ++k)
@@ -5786,17 +5786,18 @@ void host_csric0(rocsparse_int                     M,
             T const diag_entry = csr_val[j] - sum;
             csr_val[j]         = std::sqrt(std::abs(diag_entry));
 
-            if((std::real(diag_entry) <= tol * tol) && (std::imag(diag_entry) == 0))
+            auto const tolXtol = tol * tol;
+            if((std::real(diag_entry) <= tolXtol) && (std::imag(diag_entry) == 0))
             {
                 *singular_pivot = std::min(*singular_pivot, ai + base);
-            };
+            }
 
             // check for zero diagonal
             if(diag_entry == static_cast<T>(0))
             {
                 *numeric_pivot = std::min(*numeric_pivot, ai + base);
-            };
-        };
+            }
+        }
 
         // clear nnz entries
         for(j = row_begin; j < row_end; ++j)
@@ -5808,25 +5809,25 @@ void host_csric0(rocsparse_int                     M,
     if(*struct_pivot != max_int)
     {
         *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
-    };
+    }
 
     if(*numeric_pivot != max_int)
     {
         *singular_pivot = std::min(*singular_pivot, *numeric_pivot);
-    };
+    }
 
     if(*struct_pivot == max_int)
     {
         *struct_pivot = -1;
-    };
+    }
     if(*numeric_pivot == max_int)
     {
         *numeric_pivot = -1;
-    };
+    }
     if(*singular_pivot == max_int)
     {
         *singular_pivot = -1;
-    };
+    }
 }
 
 template <typename T, typename U>
@@ -5843,11 +5844,11 @@ void host_csrilu0(rocsparse_int                     M,
                   U                                 boost_tol,
                   T                                 boost_val)
 {
-    bool const isok
+    const bool isok
         = (struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr);
     assert(isok);
 
-    rocsparse_int const max_int = std::numeric_limits<rocsparse_int>::max();
+    constexpr rocsparse_int max_int = std::numeric_limits<rocsparse_int>::max();
     // Initialize pivot
     *struct_pivot   = max_int;
     *numeric_pivot  = max_int;
@@ -5908,7 +5909,7 @@ void host_csrilu0(rocsparse_int                     M,
                         *numeric_pivot = std::min(*numeric_pivot, col_j + base);
                         continue;
                     }
-                };
+                }
 
                 {
                     // multiplication factor
@@ -5925,7 +5926,7 @@ void host_csrilu0(rocsparse_int                     M,
                             csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
                         }
                     }
-                };
+                }
             }
             else if(csr_col_ind[j] - base == ai)
             {
@@ -5951,24 +5952,24 @@ void host_csrilu0(rocsparse_int                     M,
             diag_offset[ai] = diag_pos;
 
             {
-                rocsparse_int const diag_pos = diag_offset[ai];
-                bool const is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
+                const rocsparse_int diag_pos = diag_offset[ai];
+                const bool is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
 
-                bool const is_singular_diag = is_diag && (std::abs(csr_val[diag_pos]) <= tol);
-                bool const is_zero_diag     = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
+                const bool is_singular_diag = is_diag && (std::abs(csr_val[diag_pos]) <= tol);
+                const bool is_zero_diag     = is_diag && (csr_val[diag_pos] == static_cast<T>(0));
 
                 // check for singular diagonal
                 if(is_singular_diag)
                 {
                     *singular_pivot = std::min(*singular_pivot, (ai + base));
-                };
+                }
 
                 // check for zero diagonal
                 if(is_zero_diag)
                 {
                     *numeric_pivot = std::min(*numeric_pivot, (ai + base));
-                };
-            };
+                }
+            }
 
             // clear nnz entries
             for(j = row_begin; j < row_end; ++j)
@@ -5976,30 +5977,30 @@ void host_csrilu0(rocsparse_int                     M,
                 nnz_entries[csr_col_ind[j] - base] = 0;
             }
         }
-    };
+    }
 
     if(*struct_pivot != max_int)
     {
         *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
-    };
+    }
 
     if(*numeric_pivot != max_int)
     {
         *singular_pivot = std::min(*singular_pivot, *numeric_pivot);
-    };
+    }
 
     if(*singular_pivot == max_int)
     {
         *singular_pivot = -1;
-    };
+    }
     if(*numeric_pivot == max_int)
     {
         *numeric_pivot = -1;
-    };
+    }
     if(*struct_pivot == max_int)
     {
         *struct_pivot = -1;
-    };
+    }
 }
 
 // Parallel Cyclic reduction based on paper "Fast Tridiagonal Solvers on the GPU" by Yao Zhang
