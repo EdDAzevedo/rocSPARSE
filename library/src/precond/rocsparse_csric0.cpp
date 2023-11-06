@@ -864,7 +864,8 @@ try
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
+            const rocsparse_int neg_one = -1;
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, neg_one, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -888,7 +889,8 @@ try
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
-            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
+            const rocsparse_int neg_one = -1;
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, neg_one, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -960,8 +962,8 @@ try
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            // set to 0xFF is assign -1 to signed integer
-            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 0xFF, sizeof(rocsparse_int), stream));
+            const rocsparse_int neg_one = -1;
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, neg_one, sizeof(rocsparse_int), stream));
         }
         else
         {
