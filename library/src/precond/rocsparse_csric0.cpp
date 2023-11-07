@@ -1010,7 +1010,7 @@ try
         *position = singular_pivot;
     };
 
-    return ((singular_pivot == -1) ? rocsparse_status_success : rocsparse_status_singular_pivot);
+    return( rocsparse_status_success ); 
 }
 catch(...)
 {
