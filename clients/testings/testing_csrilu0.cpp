@@ -693,7 +693,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
 void testing_csrilu0_extra(const Arguments& arg)
 {
 
-#define CALL_TEST(TYPE)                     \
+#define CALL_TEST(TYPE)                            \
     {                                              \
         testing_csrilu0_extra_template<TYPE>(arg); \
     }

@@ -134,7 +134,7 @@ void testing_csricsv(const Arguments& arg)
                        h_numeric_pivot_gold,
                        h_singular_pivot_gold,
                        tol);
-    };
+    }
 
     // Check for structural zero pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));

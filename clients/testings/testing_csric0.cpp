@@ -1019,7 +1019,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
 void testing_csric0_extra(const Arguments& arg)
 {
 
-#define CALL_TEST(TYPE)                    \
+#define CALL_TEST(TYPE)                           \
     {                                             \
         testing_csric0_extra_template<TYPE>(arg); \
     }
