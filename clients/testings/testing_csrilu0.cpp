@@ -693,13 +693,13 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
 void testing_csrilu0_extra(const Arguments& arg)
 {
 
-#define CALL_INSTANTIATE(TYPE)                     \
+#define CALL_TEST(TYPE)                     \
     {                                              \
         testing_csrilu0_extra_template<TYPE>(arg); \
     }
-    CALL_INSTANTIATE(float);
-    CALL_INSTANTIATE(double);
-    CALL_INSTANTIATE(rocsparse_float_complex);
-    CALL_INSTANTIATE(rocsparse_double_complex);
-#undef CALL_INSTANTIATE
+    CALL_TEST(float);
+    CALL_TEST(double);
+    CALL_TEST(rocsparse_float_complex);
+    CALL_TEST(rocsparse_double_complex);
+#undef CALL_TEST
 }
