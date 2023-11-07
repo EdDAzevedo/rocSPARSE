@@ -861,7 +861,7 @@ void host_csric0(rocsparse_int                     M,
                  rocsparse_index_base              base,
                  rocsparse_int*                    struct_pivot,
                  rocsparse_int*                    numeric_pivot,
-                 rocsparse_int*                    singualr_pivot,
+                 rocsparse_int*                    singular_pivot,
                  double                            tol);
 
 template <typename T, typename U>
