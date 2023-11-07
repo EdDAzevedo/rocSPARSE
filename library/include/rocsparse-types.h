@@ -423,9 +423,7 @@ typedef enum rocsparse_status_
     rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
     rocsparse_status_requires_sorted_storage = 12, /**< sorted storage required. */
     rocsparse_status_thrown_exception        = 13, /**< exception being thrown. */
-    rocsparse_status_continue                = 14, /**< Nothing preventing function to proceed */
-
-    rocsparse_status_singular_pivot = 15 /**< encountered singular pivot. */
+    rocsparse_status_continue                = 14  /**< Nothing preventing function to proceed */
 
 } rocsparse_status;
 
