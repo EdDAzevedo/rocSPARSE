@@ -971,25 +971,12 @@ extern "C" rocsparse_status rocsparse_csrilu0_singular_pivot(rocsparse_handle   
                                                              rocsparse_int*     position)
 try
 {
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    // Logging
-    log_trace(
-        handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
+    log_trace(handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
 
-    // Check pointer arguments
-    if(position == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    ROCSPARSE_CHECKARG_POINTER(1, info);
+    ROCSPARSE_CHECKARG_POINTER(2, position);
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -1011,7 +998,7 @@ try
         return rocsparse_status_success;
     }
 
-    const rocsparse_int max_int        = std::numeric_limits<rocsparse_int>::max();
+    constexpr rocsparse_int max_int    = std::numeric_limits<rocsparse_int>::max();
     rocsparse_int       zero_pivot     = max_int;
     rocsparse_int       singular_pivot = max_int;
 
