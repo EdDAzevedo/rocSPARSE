@@ -100,8 +100,6 @@ const char* rocsparse_get_status_name(rocsparse_status status)
         return "rocsparse_status_arch_mismatch";
     case rocsparse_status_zero_pivot:
         return "rocsparse_status_zero_pivot";
-    case rocsparse_status_singular_pivot:
-        return "rocsparse_status_singular_pivot";
     case rocsparse_status_not_initialized:
         return "rocsparse_status_not_initialized";
     case rocsparse_status_type_mismatch:
@@ -144,8 +142,6 @@ const char* rocsparse_get_status_description(rocsparse_status status)
         return "device arch is not supported";
     case rocsparse_status_zero_pivot:
         return "encountered zero pivot";
-    case rocsparse_status_singular_pivot:
-        return "encountered singular pivot";
     case rocsparse_status_not_initialized:
         return "descriptor has not been initialized";
     case rocsparse_status_type_mismatch:
