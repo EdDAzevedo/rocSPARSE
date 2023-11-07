@@ -75,13 +75,14 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric0_singular_pivot returns \ref rocsparse_status_success, if a
-*  numerical singular pivot (G(k,k) <= tol ) has been found during rocsparse_scsric0() or
+*  \p rocsparse_csric0_singular_pivot returns the position of a
+*  numerical singular pivot (where L(k,k) <= tol and imaginary part of L(k,k) is zero) 
+*  that has been found during rocsparse_scsric0() or
 *  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 and \ref rocsparse_status_success is returned.
+*  \p position is set to -1 if no singular pivot was found.
 *
 *  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
 *  performance negatively.
@@ -101,7 +102,6 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  \retval     rocsparse_status_invalid_pointer \p info or \p position pointer is
 *              invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
-*  \retval     rocsparse_status_singular_pivot singular pivot has been found.
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
@@ -113,13 +113,14 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric_singular_pivot returns \ref rocsparse_status_success, if a
-*  numerical singular pivot (L(k,k) <= tol ) has been found during rocsparse_scsric0() or
+*  \p rocsparse_csric0_set_tolerance  sets the numerical tolerance for detecting a
+*  numerical singular pivot (where L(k,k) <= tol  and imaginary part of L(k,k) is zero) 
+*  that might be found during rocsparse_scsric0() or
 *  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 and \ref rocsparse_status_success is returned.
+*  \p position is set to -1 if no singular pivot was found
 *
 *  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
 *  performance negatively.
@@ -132,10 +133,12 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  tolerance    tolerance for detecting singular pivot (L(k,k) <= tol)
+*  tolerance    tolerance for detecting singular pivot (L(k,k) <= tol) 
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer if \p info tolerance pointer is 
+*              invalid
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
@@ -147,8 +150,9 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric_singular_pivot returns \ref rocsparse_status_success, if a
-*  numerical singular pivot (L(k,k) <= tol ) has been found during rocsparse_scsric0() or
+*  \p rocsparse_csric0_get_tolerance returns the numerical tolerance for detecting a
+*  numerical singular pivot (where L(k,k) <= tol and imaginary part of L(k,k) is zero) 
+*  that might be found during rocsparse_scsric0() or
 *  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
 *
@@ -170,6 +174,8 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer if \p info or \p tolerance pointer is 
+*              invalid
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csric0_get_tolerance(rocsparse_handle   handle,

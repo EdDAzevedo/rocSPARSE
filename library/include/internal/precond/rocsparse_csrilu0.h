@@ -76,8 +76,8 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_set_tolerance returns \ref rocsparse_status_singular_pivot, if a
-*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  \p rocsparse_csrilu0_set_tolerance sets the numerical tolerance for detecting a 
+*  near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
 *  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$.
 *
@@ -97,7 +97,7 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer \p info. 
+*  \retval     rocsparse_status_invalid_pointer \p info pointer is invalid. 
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 ROCSPARSE_EXPORT
@@ -110,8 +110,8 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_get_tolerance returns \ref rocsparse_status_singular_pivot, if a
-*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  \p rocsparse_csrilu0_get_tolerance returns the numerical tolerance for detecing
+*  a near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
 *  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$. 
 *
@@ -127,11 +127,12 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[out]
-*  tolerance    obtain tolerance value to determine singular pivot \f$j\f$, tolerance in host memory.
+*  tolerance   obtain tolerance value to determine singular pivot \f$j\f$, 
+*              where tolerance is in host memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_pointer \p info.
+*  \retval     rocsparse_status_invalid_pointer \p info or tolerance pointer is invalid..
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 ROCSPARSE_EXPORT
@@ -143,8 +144,8 @@ rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_singular_pivot returns \ref rocsparse_status_singular_pivot, if either a
-*  near numerical zero entry has been found during rocsparse_scsrilu0(),
+*  \p rocsparse_csrilu0_singular_pivot returns the position of a
+*  near numerical zero entry that has been found during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
 *  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$ is stored in \p position, using same index
 *  base as the CSR matrix.
@@ -170,7 +171,6 @@ rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
 *  \retval     rocsparse_status_invalid_pointer \p info or \p position pointer is
 *              invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
-*  \retval     rocsparse_status_singular_pivot singular pivot has been found.
 */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrilu0_singular_pivot(rocsparse_handle   handle,
