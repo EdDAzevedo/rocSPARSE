@@ -72,14 +72,14 @@ struct _rocsparse_handle
     // logging mode
     rocsparse_layer_mode layer_mode;
     // device buffer
-    size_t buffer_size{0};
-    void*  buffer{nullptr};
+    size_t buffer_size{};
+    void*  buffer{};
     // device one
-    float*  sone{nullptr};
-    double* done{nullptr};
+    float*  sone{};
+    double* done{};
     // device complex one
-    rocsparse_float_complex*  cone{nullptr};
-    rocsparse_double_complex* zone{nullptr};
+    rocsparse_float_complex*  cone{};
+    rocsparse_double_complex* zone{};
 
     // logging streams
     std::ofstream log_trace_ofs;
@@ -181,19 +181,19 @@ struct _rocsparse_mat_info
     rocsparse_csritsv_info csritsv_info{};
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
-    void* zero_pivot{nullptr};
+    void* zero_pivot{};
 
     // singular pivot for csric0
-    void* singular_pivot{nullptr};
+    void* singular_pivot{};
 
     // tolerance used for determining near singularity
-    double singular_tol{0};
+    double singular_tol{};
 
     // numeric boost for ilu0
     int         boost_enable{};
     int         use_double_prec_tol{};
-    const void* boost_tol{nullptr};
-    const void* boost_val{nullptr};
+    const void* boost_tol{};
+    const void* boost_val{};
 };
 
 /********************************************************************************
