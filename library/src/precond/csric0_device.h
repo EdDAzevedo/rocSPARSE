@@ -425,7 +425,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
             const T diag_val = csr_val[row_diag] - sum;
 
             // check for negative value and numerical small value
-	    const double tolXtol = tol * tol;
+            const double tolXtol = tol * tol;
             if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tolXtol)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));

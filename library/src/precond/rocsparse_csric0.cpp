@@ -163,7 +163,7 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
         {
             RETURN_IF_HIP_ERROR(rocsparse_hipMallocAsync(
                 (void**)&(info->singular_pivot), sizeof(rocsparse_int), handle->stream));
-        };
+        }
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->singular_pivot,
                                            info->zero_pivot,
                                            sizeof(rocsparse_int),
@@ -937,11 +937,11 @@ try
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
     // Logging
-    log_trace(handle, "rocsparse_csric0_singular_pivot", (const void*&)info, (const void*&)position);
+    log_trace(
+        handle, "rocsparse_csric0_singular_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);
-
 
     // Stream
     hipStream_t stream = handle->stream;
@@ -963,9 +963,9 @@ try
         return rocsparse_status_success;
     }
 
-    constexpr rocsparse_int max_int    = std::numeric_limits<rocsparse_int>::max();
-    rocsparse_int       zero_pivot     = max_int;
-    rocsparse_int       singular_pivot = max_int;
+    constexpr rocsparse_int max_int        = std::numeric_limits<rocsparse_int>::max();
+    rocsparse_int           zero_pivot     = max_int;
+    rocsparse_int           singular_pivot = max_int;
 
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         &zero_pivot, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
@@ -984,7 +984,7 @@ try
     if(singular_pivot == max_int)
     {
         singular_pivot = -1;
-    };
+    }
 
     // Differentiate between pointer modes
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -998,9 +998,9 @@ try
     {
         // rocsparse_pointer_mode_host
         *position = singular_pivot;
-    };
+    }
 
-    return( rocsparse_status_success ); 
+    return (rocsparse_status_success);
 }
 catch(...)
 {

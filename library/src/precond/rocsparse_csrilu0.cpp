@@ -973,7 +973,8 @@ try
 {
     ROCSPARSE_CHECKARG_HANDLE(0, handle);
 
-    log_trace(handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
+    log_trace(
+        handle, "rocsparse_csrilu0_singular_pivot", (const void*&)info, (const void*&)position);
 
     ROCSPARSE_CHECKARG_POINTER(1, info);
     ROCSPARSE_CHECKARG_POINTER(2, position);
@@ -998,9 +999,9 @@ try
         return rocsparse_status_success;
     }
 
-    constexpr rocsparse_int max_int    = std::numeric_limits<rocsparse_int>::max();
-    rocsparse_int       zero_pivot     = max_int;
-    rocsparse_int       singular_pivot = max_int;
+    constexpr rocsparse_int max_int        = std::numeric_limits<rocsparse_int>::max();
+    rocsparse_int           zero_pivot     = max_int;
+    rocsparse_int           singular_pivot = max_int;
 
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         &zero_pivot, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
@@ -1019,7 +1020,7 @@ try
     if(singular_pivot == max_int)
     {
         singular_pivot = -1;
-    };
+    }
 
     // Differentiate between pointer modes
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -1033,9 +1034,9 @@ try
     {
         // rocsparse_pointer_mode_host
         *position = singular_pivot;
-    };
+    }
 
-    return( rocsparse_status_success );
+    return (rocsparse_status_success);
 }
 catch(...)
 {
