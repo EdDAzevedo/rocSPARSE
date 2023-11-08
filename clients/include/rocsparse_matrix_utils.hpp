@@ -596,9 +596,10 @@ struct rocsparse_matrix_utils
                                                               : rocsparse_status_success);
 
             rocsparse_int hsolve_pivot_neg[1];
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, hsolve_pivot_neg),
-                                    (hsolve_pivot_neg[0] != -1) ? rocsparse_status_singular_pivot
-                                                                : rocsparse_status_success);
+            {
+                auto st = rocsparse_csric0_singular_pivot(handle, info, hsolve_pivot_neg);
+                EXPECT_ROCSPARSE_STATUS(st == rocsparse_status_success);
+            }
             break;
         }
         }
