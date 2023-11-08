@@ -75,16 +75,16 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric0_singular_pivot returns the position of a
-*  numerical singular pivot (where L(k,k) <= tolerance) 
+*  \p rocsparse_csric0_singular_pivot() returns the position of a
+*  numerical singular pivot (where \f$|L_{j,j}| \leq \text{tolerance}\f$) 
 *  that has been found during rocsparse_scsric0() or
-*  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
+*  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$L_{j,j}\f$
 *  is stored in \p position, using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
 *  \p position is set to -1 if no singular pivot was found.
 *
-*  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
+*  \note \p rocsparse_csric0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
@@ -95,7 +95,7 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[inout]
-*  position    pointer to singular pivot \f$j\f$, can be in host or device memory.
+*  position    pointer to singular pivot \f$k\f$, can be in host or device memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -113,16 +113,13 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric0_set_tolerance  sets the numerical tolerance for detecting a
-*  numerical singular pivot (where L(k,k) <= tolerance) 
+*  \p rocsparse_csric0_set_tolerance()  sets the numerical tolerance for detecting a
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
 *  that might be found during rocsparse_scsric0() or
-*  rocsparse_dcsric0()  computation.  The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
-*  is stored in \p position, using same index base as the CSR matrix.
+*  rocsparse_dcsric0()  computation.  
 *
-*  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 if no singular pivot was found
 *
-*  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
+*  \note \p rocsparse_csric0_set_tolerance() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
@@ -133,7 +130,7 @@ rocsparse_status rocsparse_csric0_singular_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  tolerance    tolerance for detecting singular pivot (L(k,k) <= tolerance) 
+*  tolerance    tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$) 
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -150,16 +147,13 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csric0_get_tolerance returns the numerical tolerance for detecting a
-*  numerical singular pivot (where L(k,k) <= tolerance) 
+*  \p rocsparse_csric0_get_tolerance() returns the numerical tolerance for detecting a
+*  numerical singular pivot (where \f$|L_{j,j}|  \leq \text{tolerance}\f$) 
 *  that might be found during rocsparse_scsric0() or
-*  rocsparse_dcsric0() computation. The first singular pivot \f$j\f$ at \f$A_{j,j}\f$
-*  is stored in \p position, using same index base as the CSR matrix.
+*  rocsparse_dcsric0() computation. 
 *
-*  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 and \ref rocsparse_status_success is returned.
 *
-*  \note \p rocsparse_csric0_singular_pivot is a blocking function. It might influence
+*  \note \p rocsparse_csric0_get_tolerance() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
@@ -170,7 +164,7 @@ rocsparse_status rocsparse_csric0_set_tolerance(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[out]
-*  tolerance    obtain tolerance for detecting singular pivot (L(k,k) <= tolerance)
+*  tolerance    obtain tolerance for detecting singular pivot (\f$|L_{j,j}|  \leq \text{tolerance}\f$)
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.

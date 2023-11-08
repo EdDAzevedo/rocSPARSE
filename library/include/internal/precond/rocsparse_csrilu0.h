@@ -76,13 +76,13 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_set_tolerance sets the numerical tolerance for detecting a 
+*  \p rocsparse_csrilu0_set_tolerance() sets the numerical tolerance for detecting a 
 *  near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
-*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$.
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$.
 *
 *
-*  \note \p rocsparse_csrilu0_set_tolerance is a blocking function. It might influence
+*  \note \p rocsparse_csrilu0_set_tolerance() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
@@ -93,7 +93,8 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[in]
-*  tolerance    tolerance value to determine singular pivot \f$j\f$, tolerance in host memory.
+*  tolerance    tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$, 
+*               where variable tolerance is in host memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -110,13 +111,13 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_get_tolerance returns the numerical tolerance for detecing
+*  \p rocsparse_csrilu0_get_tolerance() returns the numerical tolerance for detecing
 *  a near numerical zero entry during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
-*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$. 
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$. 
 *
 *
-*  \note \p rocsparse_csrilu0_get_tolerance is a blocking function. It might influence
+*  \note \p rocsparse_csrilu0_get_tolerance() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
@@ -127,8 +128,8 @@ rocsparse_status rocsparse_csrilu0_set_tolerance(rocsparse_handle   handle,
 *  @param[in]
 *  info        structure that holds the information collected during the analysis step.
 *  @param[out]
-*  tolerance   obtain tolerance value to determine singular pivot \f$j\f$, 
-*              where tolerance is in host memory.
+*  tolerance   obtain tolerance value to determine singular pivot \f$|A_{j,j}| \leq \text{tolerance}\f$, 
+*              where variable tolerance is in host memory.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -144,16 +145,16 @@ rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
 *  storage format
 *
 *  \details
-*  \p rocsparse_csrilu0_singular_pivot returns the position of a
+*  \p rocsparse_csrilu0_singular_pivot() returns the position of a
 *  near numerical zero entry that has been found during rocsparse_scsrilu0(),
 *  rocsparse_dcsrilu0(), rocsparse_ccsrilu0() or rocsparse_zcsrilu0() computation. The
-*  first singular pivot \f$j\f$ at \f$|A_{j,j}| <= tol\f$ is stored in \p position, using same index
-*  base as the CSR matrix.
+*  first singular pivot \f$j\f$ at \f$|A_{j,j}| \leq \text{tolerance}\f$  is stored in \p position, 
+*  using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
 *  \p position is set to -1 and \ref rocsparse_status_success is returned instead.
 *
-*  \note \p rocsparse_csrilu0_singular_pivot is a blocking function. It might influence
+*  \note \p rocsparse_csrilu0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.
 *
 *  \note
