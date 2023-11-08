@@ -166,8 +166,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                 if(lid == 0)
                 {
                     rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-                };
-            };
+                }
+            }
 
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
@@ -232,17 +232,17 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
             if(is_singular_pivot)
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
-            };
-        };
+            }
+        }
 
         {
             const bool is_zero_pivot = is_diag && (csr_val[row_diag] == static_cast<T>(0));
             if(is_zero_pivot)
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
-            };
-        };
-    };
+            }
+        }
+    }
 
     __threadfence();
 
@@ -365,8 +365,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                 {
                     // We are looking for the first singular pivot
                     rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-                };
-            };
+                }
+            }
 
             // Row has numerical zero diagonal
             if(diag_val == static_cast<T>(0))
@@ -434,17 +434,17 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
             if(is_singular_pivot)
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
-            };
-        };
+            }
+        }
 
         {
             const bool is_zero_pivot = (is_diag && (csr_val[row_diag] == static_cast<T>(0)));
             if(is_zero_pivot)
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
-            };
-        };
-    };
+            }
+        }
+    }
 
     __threadfence();
 
