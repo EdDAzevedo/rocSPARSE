@@ -231,13 +231,13 @@ void csric0_hash_kernel(rocsparse_int m,
             if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol * tol)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
-            };
+            }
 
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
-            };
+            }
         }
     }
 
@@ -425,16 +425,17 @@ void csric0_binsearch_kernel(rocsparse_int m,
             const T diag_val = csr_val[row_diag] - sum;
 
             // check for negative value and numerical small value
-            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol * tol)))
+	    const double tolXtol = tol * tol;
+            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tolXtol)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
-            };
+            }
 
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
-            };
+            }
         }
     }
 
