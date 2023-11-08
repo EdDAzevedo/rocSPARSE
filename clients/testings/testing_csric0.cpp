@@ -38,13 +38,13 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
 
                                bool need_display)
 {
-    bool const arg_unit_check = arg.unit_check;
-    bool const arg_timing     = arg.timing;
-    int const  arg_iters      = arg.iters;
+    const bool arg_unit_check = arg.unit_check;
+    const bool arg_timing     = arg.timing;
+    const int  arg_iters      = arg.iters;
 
-    rocsparse_analysis_policy const apol = arg.apol;
-    rocsparse_solve_policy const    spol = arg.spol;
-    rocsparse_index_base const      base = arg.baseA;
+    const rocsparse_analysis_policy apol = arg.apol;
+    const rocsparse_solve_policy    spol = arg.spol;
+    const rocsparse_index_base      base = arg.baseA;
 
     auto const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
 
@@ -563,10 +563,10 @@ void testing_csric0(const Arguments& arg)
     rocsparse_int nnz;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
 
-    bool const use_test_csric0_matrix = true;
+    const bool use_test_csric0_matrix = true;
     if(use_test_csric0_matrix)
     {
-        bool const need_display = arg.timing;
+        const bool need_display = arg.timing;
         test_csric0_matrix(handle,
                            descr,
                            info,
@@ -911,7 +911,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1              ]
         // [      2         ]
@@ -922,7 +922,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, 2, 0, 0};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
@@ -939,7 +939,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1   -1         ]
         // [-1    1         ]
@@ -951,7 +951,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, 1, 1, 1};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
@@ -971,7 +971,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         // Note: default tolerance for singular pivot is 0.0
         // -------------------------------------------------
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1   -1         ]
         // [-1    0.5       ]
@@ -983,7 +983,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, 0.5, 1, 1};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
@@ -1002,7 +1002,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         double tol = 0.001;
         CHECK_ROCSPARSE_ERROR(rocsparse_csric0_set_tolerance(handle, info, tol));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1   -1         ]
         // [-1    1.0001    ]
@@ -1014,7 +1014,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, 1.0001, 1, 1};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }

@@ -40,16 +40,16 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                 const Arguments& arg,
                                 bool             need_display)
 {
-    rocsparse_analysis_policy const apol = arg.apol;
-    rocsparse_solve_policy const    spol = arg.spol;
-    rocsparse_index_base const      base = arg.baseA;
+    const rocsparse_analysis_policy apol = arg.apol;
+    const rocsparse_solve_policy    spol = arg.spol;
+    const rocsparse_index_base      base = arg.baseA;
 
-    int const boost       = arg.numericboost;
-    T const   h_boost_val = arg.get_boostval<T>();
-    T const   h_boost_tol = static_cast<T>(arg.boosttol);
+    const int boost       = arg.numericboost;
+    const T   h_boost_val = arg.get_boostval<T>();
+    const T   h_boost_tol = static_cast<T>(arg.boosttol);
 
     // Sample matrix
-    rocsparse_int const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
+    const rocsparse_int nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
 
     // Allocate host memory for vectors
     host_vector<T>             hcsr_val_1(nnz);
@@ -583,7 +583,7 @@ void testing_csrilu0(const Arguments& arg)
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, M, N, nnz, base);
 
     {
-        bool const need_display = true;
+        const bool need_display = true;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, arg, need_display);
     }
@@ -612,7 +612,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1              ]
         // [      2         ]
@@ -623,7 +623,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, 2, 0, 0};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
@@ -640,7 +640,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         rocsparse_index_base base = arg.baseA;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1   -1         ]
         // [-1    1         ]
@@ -652,7 +652,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, 1, 1, 1};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
@@ -671,7 +671,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         double const tol = 0.001;
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_set_tolerance(handle, info, tol));
 
-        int const M = 4;
+        const int M = 4;
         // ------------------
         // [ 1   -1         ]
         // [-1    1.0001    ]
@@ -683,7 +683,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind{base, base + 1, base, base + 1, base + 2, base + 3};
         host_vector<T>             hcsr_val{1, -1, -1, static_cast<T>(1 + tol / 10.0), 1, 1};
 
-        bool const need_display = false;
+        const bool need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
     }
