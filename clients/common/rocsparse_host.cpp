@@ -5680,10 +5680,9 @@ void host_csric0(rocsparse_int                     M,
                  double                            tol)
 {
     // Initialize pivot
-    constexpr rocsparse_int max_int = std::numeric_limits<rocsparse_int>::max();
-    *struct_pivot                   = max_int;
-    *numeric_pivot                  = max_int;
-    *singular_pivot                 = max_int;
+    *struct_pivot   = -1;
+    *numeric_pivot  = -1;
+    *singular_pivot = -1;
 
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_offset(M);
@@ -5738,14 +5737,16 @@ void host_csric0(rocsparse_int                     M,
             if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
             {
                 // Numerical negative diagonal
-                *singular_pivot = std::min(*singular_pivot, col_j + base);
+                *singular_pivot = (*singular_pivot == -1) ? (col_j + base)
+                                                          : std::min(*singular_pivot, col_j + base);
             }
 
             // Check for numeric zero
             if(diag_val == static_cast<T>(0))
             {
                 // Numerical zero diagonal
-                *numeric_pivot = std::min(*numeric_pivot, col_j + base);
+                *numeric_pivot = (*numeric_pivot == -1) ? (col_j + base)
+                                                        : std::min(*numeric_pivot, col_j + base);
             }
             else
             {
@@ -5774,8 +5775,10 @@ void host_csric0(rocsparse_int                     M,
         if(!has_diag)
         {
             // Structural (and numerical) zero diagonal
-            *struct_pivot  = std::min(*struct_pivot, ai + base);
-            *numeric_pivot = std::min(*numeric_pivot, ai + base);
+            *struct_pivot
+                = (*struct_pivot == -1) ? (ai + base) : std::min(*struct_pivot, ai + base);
+            *numeric_pivot
+                = (*numeric_pivot == -1) ? (ai + base) : std::min(*numeric_pivot, ai + base);
         }
         else
         {
@@ -5789,13 +5792,15 @@ void host_csric0(rocsparse_int                     M,
             auto const tolXtol = tol * tol;
             if((std::real(diag_entry) <= tolXtol) && (std::imag(diag_entry) == 0))
             {
-                *singular_pivot = std::min(*singular_pivot, ai + base);
+                *singular_pivot
+                    = (*singular_pivot == -1) ? (ai + base) : std::min(*singular_pivot, ai + base);
             }
 
             // check for zero diagonal
             if(diag_entry == static_cast<T>(0))
             {
-                *numeric_pivot = std::min(*numeric_pivot, ai + base);
+                *numeric_pivot
+                    = (*numeric_pivot == -1) ? (ai + base) : std::min(*numeric_pivot, ai + base);
             }
         }
 
@@ -5806,27 +5811,16 @@ void host_csric0(rocsparse_int                     M,
         }
     }
 
-    if(*struct_pivot != max_int)
+    if(*struct_pivot != -1)
     {
-        *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
+        *numeric_pivot
+            = (*numeric_pivot == -1) ? (*struct_pivot) : std::min(*numeric_pivot, *struct_pivot);
     }
 
-    if(*numeric_pivot != max_int)
+    if(*numeric_pivot != -1)
     {
-        *singular_pivot = std::min(*singular_pivot, *numeric_pivot);
-    }
-
-    if(*struct_pivot == max_int)
-    {
-        *struct_pivot = -1;
-    }
-    if(*numeric_pivot == max_int)
-    {
-        *numeric_pivot = -1;
-    }
-    if(*singular_pivot == max_int)
-    {
-        *singular_pivot = -1;
+        *singular_pivot = (*singular_pivot == -1) ? (*numeric_pivot)
+                                                  : std::min(*singular_pivot, *numeric_pivot);
     }
 }
 
@@ -5848,11 +5842,10 @@ void host_csrilu0(rocsparse_int                     M,
         = (struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr);
     assert(isok);
 
-    constexpr rocsparse_int max_int = std::numeric_limits<rocsparse_int>::max();
     // Initialize pivot
-    *struct_pivot   = max_int;
-    *numeric_pivot  = max_int;
-    *singular_pivot = max_int;
+    *struct_pivot   = -1;
+    *numeric_pivot  = -1;
+    *singular_pivot = -1;
 
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_offset(M, -1);
@@ -5900,13 +5893,17 @@ void host_csrilu0(rocsparse_int                     M,
                     // Check for numeric singular pivot
                     if(std::abs(diag_val) <= tol)
                     {
-                        *singular_pivot = std::min(*singular_pivot, col_j + base);
+                        *singular_pivot = (*singular_pivot == -1)
+                                              ? (col_j + base)
+                                              : std::min(*singular_pivot, col_j + base);
                     }
 
                     // Check for numeric zero pivot
                     if(diag_val == static_cast<T>(0))
                     {
-                        *numeric_pivot = std::min(*numeric_pivot, col_j + base);
+                        *numeric_pivot = (*numeric_pivot == -1)
+                                             ? (col_j + base)
+                                             : std::min(*numeric_pivot, col_j + base);
                         continue;
                     }
                 }
@@ -5943,8 +5940,10 @@ void host_csrilu0(rocsparse_int                     M,
         if(!has_diag)
         {
             // Structural (and numerical) zero diagonal
-            *struct_pivot  = std::min(*struct_pivot, ai + base);
-            *numeric_pivot = std::min(*numeric_pivot, ai + base);
+            *struct_pivot
+                = (*struct_pivot == -1) ? (ai + base) : std::min(*struct_pivot, ai + base);
+            *numeric_pivot
+                = (*numeric_pivot == -1) ? (ai + base) : std::min(*numeric_pivot, ai + base);
         }
         else
         {
@@ -5961,13 +5960,16 @@ void host_csrilu0(rocsparse_int                     M,
                 // check for singular diagonal
                 if(is_singular_diag)
                 {
-                    *singular_pivot = std::min(*singular_pivot, (ai + base));
+                    *singular_pivot = (*singular_pivot == -1)
+                                          ? (ai + base)
+                                          : std::min(*singular_pivot, (ai + base));
                 }
 
                 // check for zero diagonal
                 if(is_zero_diag)
                 {
-                    *numeric_pivot = std::min(*numeric_pivot, (ai + base));
+                    *numeric_pivot = (*numeric_pivot == -1) ? (ai + base)
+                                                            : std::min(*numeric_pivot, (ai + base));
                 }
             }
 
@@ -5979,27 +5981,16 @@ void host_csrilu0(rocsparse_int                     M,
         }
     }
 
-    if(*struct_pivot != max_int)
+    if(*struct_pivot != -1)
     {
-        *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
+        *numeric_pivot
+            = (*numeric_pivot == -1) ? (*struct_pivot) : std::min(*numeric_pivot, *struct_pivot);
     }
 
-    if(*numeric_pivot != max_int)
+    if(*numeric_pivot != -1)
     {
-        *singular_pivot = std::min(*singular_pivot, *numeric_pivot);
-    }
-
-    if(*singular_pivot == max_int)
-    {
-        *singular_pivot = -1;
-    }
-    if(*numeric_pivot == max_int)
-    {
-        *numeric_pivot = -1;
-    }
-    if(*struct_pivot == max_int)
-    {
-        *struct_pivot = -1;
+        *singular_pivot = (*singular_pivot == -1) ? (*numeric_pivot)
+                                                  : std::min(*singular_pivot, *numeric_pivot);
     }
 }
 
