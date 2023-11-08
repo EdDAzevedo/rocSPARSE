@@ -598,7 +598,7 @@ struct rocsparse_matrix_utils
             rocsparse_int hsolve_pivot_neg[1];
             {
                 auto st = rocsparse_csric0_singular_pivot(handle, info, hsolve_pivot_neg);
-                EXPECT_ROCSPARSE_STATUS(st == rocsparse_status_success);
+                EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
             }
             break;
         }
