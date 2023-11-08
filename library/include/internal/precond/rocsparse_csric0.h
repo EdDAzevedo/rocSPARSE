@@ -453,7 +453,7 @@ rocsparse_status rocsparse_csric0_clear(rocsparse_handle handle, rocsparse_mat_i
 *  analysis meta data is required. It can be obtained by rocsparse_scsric0_analysis()
 *  or rocsparse_dcsric0_analysis(). \p rocsparse_csric0 reports the first zero pivot
 *  (either numerical or structural zero). The zero pivot status can be obtained by
-*  calling rocsparse_csric0_zero_pivot(). 
+*  calling rocsparse_csric0_zero_pivot().
 *
 *  \note
 *  The sparse CSR matrix has to be sorted. This can be achieved by calling
