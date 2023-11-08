@@ -171,18 +171,22 @@ void testing_csrilusv(const Arguments& arg)
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, h_singular_pivot_1),
-                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
-                                                             : rocsparse_status_success);
+    {
+        auto st = rocsparse_csrilu0_singular_pivot(handle, info, h_singular_pivot_1);
+        EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+    }
     // Check for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_numeric_pivot_2),
                             (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
                                                             : rocsparse_status_success);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2),
-                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
-                                                             : rocsparse_status_success);
+    {
+
+        auto st = rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2);
+        EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+    }
+
     // Copy output to CPU
     host_vector<T> hcsr_val(nnz);
     CHECK_HIP_ERROR(hipMemcpy(

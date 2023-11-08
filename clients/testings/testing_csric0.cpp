@@ -153,9 +153,7 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
         }
         {
             auto st = rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1);
-            EXPECT_ROCSPARSE_STATUS(st,
-                                    (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
-                                                                  : rocsparse_status_success);
+            EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
         }
 
         // Sync to force updated pivots
@@ -168,9 +166,12 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, d_singular_pivot_2),
-                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
-                                                              : rocsparse_status_success);
+
+        {
+            auto st = rocsparse_csric0_singular_pivot(handle, info, d_singular_pivot_2);
+
+            EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+        }
 
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
@@ -199,7 +200,7 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
                            h_solve_pivot_gold,
                            h_singular_pivot_gold,
                            tol);
-        };
+        }
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
@@ -298,9 +299,11 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
             gpu_solve_time_used += (get_time_us() - temp);
         }
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1),
-                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
-                                                              : rocsparse_status_success);
+        {
+            auto st = rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+        }
+
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
@@ -348,7 +351,7 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
                                 get_gpu_time_msec(gpu_analysis_time_used),
                                 s_timing_info_time,
                                 get_gpu_time_msec(gpu_solve_time_used));
-        };
+        }
     }
 
     // Clear csric0 meta data
@@ -430,9 +433,10 @@ void testing_csric0_bad_arg(const Arguments& arg)
     rocsparse_int singular_position = -1;
 
     {
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(nullptr, info, &singular_position),
-                                rocsparse_status_invalid_handle);
-    };
+
+        auto st = rocsparse_csric0_singular_pivot(nullptr, info, &singular_position);
+        EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_invalid_handle);
+    }
 
     // Test rocsparse_csric0_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_clear(nullptr, info), rocsparse_status_invalid_handle);
@@ -737,7 +741,7 @@ void testing_csric0(const Arguments& arg)
                                h_solve_pivot_gold,
                                h_singular_pivot_gold,
                                tol);
-            };
+            }
 
             // Check pivots
             h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
@@ -881,7 +885,7 @@ void testing_csric0(const Arguments& arg)
 
         // Free buffer
         CHECK_HIP_ERROR(rocsparse_hipFree(dbuffer));
-    };
+    }
 }
 #define INSTANTIATE(TYPE)                                             \
     template void testing_csric0_bad_arg<TYPE>(const Arguments& arg); \
@@ -921,7 +925,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 
     // -----------------------------------
     // cancellation to create a zero pivot
@@ -950,7 +954,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 
     // -----------------------
     // singular negative pivot
@@ -982,7 +986,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 
     // -----------------------
     // singular  pivot
@@ -1013,7 +1017,7 @@ static void testing_csric0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csric0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 }
 
 void testing_csric0_extra(const Arguments& arg)

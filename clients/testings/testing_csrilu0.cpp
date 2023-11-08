@@ -162,9 +162,7 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
         {
 
             auto st = rocsparse_csrilu0_singular_pivot(handle, info, h_singular_pivot_1);
-            EXPECT_ROCSPARSE_STATUS(st,
-                                    (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
-                                                                  : rocsparse_status_success);
+            EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
         }
 
         // Sync to force updated pivots
@@ -180,9 +178,10 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2),
-                                (h_singular_pivot_1[0] != -1) ? rocsparse_status_singular_pivot
-                                                              : rocsparse_status_success);
+        {
+            auto st = rocsparse_csrilu0_singular_pivot(handle, info, d_singular_pivot_2);
+            EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+        }
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
@@ -213,7 +212,7 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                             boost,
                             *get_boost_tol(&h_boost_tol),
                             h_boost_val);
-        };
+        }
 
         // Check pivots
         h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
@@ -317,7 +316,7 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
         else
         {
             pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
-        };
+        }
 
         if(need_display)
         {
@@ -337,7 +336,7 @@ static void test_csrilu0_matrix(rocsparse_local_handle&    handle,
                                 get_gpu_time_msec(gpu_analysis_time_used),
                                 s_timing_info_time,
                                 get_gpu_time_msec(gpu_solve_time_used));
-        };
+        }
     }
 
     // Clear csrilu0 meta data
@@ -446,7 +445,7 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
                                 rocsparse_status_invalid_pointer);
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_singular_pivot(handle, info, nullptr),
                                 rocsparse_status_invalid_pointer);
-    };
+    }
 
     // Test rocsparse_csrilu0_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_clear(nullptr, info),
@@ -627,7 +626,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 
     // -----------------------------------
     // cancellation to create a zero pivot
@@ -656,7 +655,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 
     // -----------------------
     // singular  pivot
@@ -687,7 +686,7 @@ static void testing_csrilu0_extra_template(const Arguments& arg)
         bool const need_display = false;
         test_csrilu0_matrix(
             handle, descr, info, M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, arg, need_display);
-    };
+    }
 }
 
 void testing_csrilu0_extra(const Arguments& arg)

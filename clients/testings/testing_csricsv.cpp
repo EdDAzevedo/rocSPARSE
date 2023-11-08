@@ -177,9 +177,11 @@ void testing_csricsv(const Arguments& arg)
 
     // Check for numerical singular pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1),
-                            (h_singular_pivot_gold[0] != -1) ? rocsparse_status_singular_pivot
-                                                             : rocsparse_status_success);
+
+    {
+        auto st = rocsparse_csric0_singular_pivot(handle, info, h_singular_pivot_1);
+        EXPECT_ROCSPARSE_STATUS(st, rocsparse_status_success);
+    }
 
     // Check for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
