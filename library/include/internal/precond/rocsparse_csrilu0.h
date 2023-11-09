@@ -152,7 +152,7 @@ rocsparse_status rocsparse_csrilu0_get_tolerance(rocsparse_handle   handle,
 *  using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 and \ref rocsparse_status_success is returned instead.
+*  \p position is set to -1. 
 *
 *  \note \p rocsparse_csrilu0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.

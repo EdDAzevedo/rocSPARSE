@@ -82,7 +82,7 @@ rocsparse_status rocsparse_csric0_zero_pivot(rocsparse_handle   handle,
 *  is stored in \p position, using same index base as the CSR matrix.
 *
 *  \p position can be in host or device memory. If no singular pivot has been found,
-*  \p position is set to -1 if no singular pivot was found.
+*  \p position is set to -1. 
 *
 *  \note \p rocsparse_csric0_singular_pivot() is a blocking function. It might influence
 *  performance negatively.
