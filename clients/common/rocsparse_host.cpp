@@ -5838,9 +5838,7 @@ void host_csrilu0(rocsparse_int                     M,
                   U                                 boost_tol,
                   T                                 boost_val)
 {
-    bool isok
-        = (struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr);
-    assert(isok);
+    assert((struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr));
 
     // Initialize pivot
     *struct_pivot   = -1;
