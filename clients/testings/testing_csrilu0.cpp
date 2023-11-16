@@ -493,14 +493,11 @@ void testing_csrilu0(const Arguments& arg)
 
     rocsparse_analysis_policy apol  = arg.apol;
     rocsparse_solve_policy    spol  = arg.spol;
-    int                       boost = arg.numericboost;
     rocsparse_index_base      base  = arg.baseA;
 
     const bool                  to_int    = arg.timing ? false : true;
     static constexpr bool       full_rank = true;
     rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
-
-    T h_boost_val = arg.get_boostval<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
