@@ -5728,10 +5728,9 @@ void host_csric0(rocsparse_int                     M,
             rocsparse_int row_begin_j = csr_row_ptr[col_j] - base;
             rocsparse_int row_diag_j  = diag_offset[col_j];
 
-            T       local_sum = static_cast<T>(0);
-            T const diag_val  = csr_val[row_diag_j];
-            T       inv_diag  = static_cast<T>(0);
-            ;
+            T local_sum = static_cast<T>(0);
+            T diag_val  = csr_val[row_diag_j];
+            T inv_diag  = static_cast<T>(0);
 
             // Check for numeric negative
             if((std::real(diag_val) <= tol) && (std::imag(diag_val) == 0))
@@ -5766,6 +5765,7 @@ void host_csric0(rocsparse_int                     M,
                     local_sum = std::fma(csr_val[k], rocsparse_conj(csr_val[idx]), local_sum);
                 }
             }
+
             val_j = (val_j - local_sum) * inv_diag;
             sum   = std::fma(val_j, rocsparse_conj(val_j), sum);
 
@@ -5786,10 +5786,10 @@ void host_csric0(rocsparse_int                     M,
             diag_offset[ai] = j;
 
             // Process diagonal entry
-            T const diag_entry = csr_val[j] - sum;
-            csr_val[j]         = std::sqrt(std::abs(diag_entry));
+            T diag_entry = csr_val[j] - sum;
+            csr_val[j]   = std::sqrt(std::abs(diag_entry));
 
-            auto const tolXtol = tol * tol;
+            auto tolXtol = tol * tol;
             if((std::real(diag_entry) <= tolXtol) && (std::imag(diag_entry) == 0))
             {
                 *singular_pivot
@@ -5838,7 +5838,7 @@ void host_csrilu0(rocsparse_int                     M,
                   U                                 boost_tol,
                   T                                 boost_val)
 {
-    const bool isok
+    bool isok
         = (struct_pivot != nullptr) && (numeric_pivot != nullptr) && (singular_pivot != nullptr);
     assert(isok);
 

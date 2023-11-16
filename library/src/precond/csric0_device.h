@@ -221,7 +221,7 @@ void csric0_hash_kernel(rocsparse_int m,
     }
 
     // Last lane processes the diagonal entry
-    if(lid == (WFSIZE - 1))
+    if(lid == WFSIZE - 1)
     {
         if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {
@@ -418,7 +418,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
     }
 
     // Last lane processes the diagonal entry
-    if(lid == (WFSIZE - 1))
+    if(lid == WFSIZE - 1)
     {
         if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         {

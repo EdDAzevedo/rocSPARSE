@@ -35,10 +35,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
                                               int* __restrict__ done,
                                               const rocsparse_int* __restrict__ map,
                                               rocsparse_int* __restrict__ zero_pivot,
-
                                               rocsparse_int* __restrict__ singular_pivot,
-                                              double tol,
-
+                                              double               tol,
                                               rocsparse_index_base idx_base,
                                               int                  boost,
                                               U                    boost_tol,
@@ -71,14 +69,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     }
 
     // Current row this wavefront is working on
-    const rocsparse_int row = map[idx];
+    rocsparse_int row = map[idx];
 
     // Diagonal entry point of the current row
-    const rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int row_diag = csr_diag_ind[row];
 
     // Row entry point
-    const rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    const rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
@@ -262,10 +260,8 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
                                                    int* __restrict__ done,
                                                    const rocsparse_int* __restrict__ map,
                                                    rocsparse_int* __restrict__ zero_pivot,
-
                                                    rocsparse_int* __restrict__ singular_pivot,
-                                                   double tol,
-
+                                                   double               tol,
                                                    rocsparse_index_base idx_base,
                                                    int                  boost,
                                                    U                    boost_tol,
@@ -283,14 +279,14 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     }
 
     // Current row this wavefront is working on
-    const rocsparse_int row = map[idx];
+    rocsparse_int row = map[idx];
 
     // Diagonal entry point of the current row
-    const rocsparse_int row_diag = csr_diag_ind[row];
+    rocsparse_int row_diag = csr_diag_ind[row];
 
     // Row entry point
-    const rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    const rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)

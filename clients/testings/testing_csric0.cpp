@@ -38,15 +38,15 @@ static void test_csric0_matrix(rocsparse_local_handle&    handle,
 
                                bool need_display)
 {
-    const bool arg_unit_check = arg.unit_check;
-    const bool arg_timing     = arg.timing;
-    const int  arg_iters      = arg.iters;
+    bool arg_unit_check = arg.unit_check;
+    bool arg_timing     = arg.timing;
+    int  arg_iters      = arg.iters;
 
-    const rocsparse_analysis_policy apol = arg.apol;
-    const rocsparse_solve_policy    spol = arg.spol;
-    const rocsparse_index_base      base = arg.baseA;
+    rocsparse_analysis_policy apol = arg.apol;
+    rocsparse_solve_policy    spol = arg.spol;
+    rocsparse_index_base      base = arg.baseA;
 
-    auto const nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
+    auto nnz = hcsr_row_ptr[M] - hcsr_row_ptr[0];
 
     host_vector<T> hcsr_val_gold;
     hcsr_val_gold = hcsr_val;
