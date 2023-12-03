@@ -148,30 +148,10 @@ void csric0_hash_kernel(rocsparse_int m,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
         //
-        // Row has numerical singular diagonal
-        if((rocsparse_real(diag_val) <= tol) && (rocsparse_imag(diag_val) == 0))
-        {
-            if(lid == 0)
-            {
-                // We are looking for the first singular pivot
-                rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-            }
-
-            // Don't skip this row if it has a singular pivot
-        }
-
-        // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
         {
-            if(lid == 0)
-            {
-                // We are looking for the first zero pivot
-                rocsparse_atomic_min(zero_pivot, local_col + idx_base);
-            }
-
-            // Skip this row if it has a zero pivot
             break;
-        }
+        };
 
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
@@ -236,8 +216,7 @@ void csric0_hash_kernel(rocsparse_int m,
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             }
 
-            csr_val[row_diag] = sqrt(rocsparse_abs(diag_val));
-            if(csr_val[row_diag] == static_cast<T>(0))
+            if((csr_val[row_diag] = sqrt(rocsparse_abs(diag_val))) == static_cast<T>(0))
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
             }
