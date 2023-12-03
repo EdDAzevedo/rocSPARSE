@@ -1,3 +1,4 @@
+#define USE_ORG 1
 /*! \file */
 /* ************************************************************************
  * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
@@ -145,7 +146,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
-#if(0)
+#ifdef USE_ORG
         // Numeric boost
         if(boost)
         {
@@ -372,7 +373,7 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-#if(0)
+#ifdef USE_ORG
         // Numeric boost
         if(boost)
         {
