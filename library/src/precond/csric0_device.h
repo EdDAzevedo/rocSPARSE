@@ -40,8 +40,9 @@ void csric0_hash_kernel(rocsparse_int m,
                         double               tol,
                         rocsparse_index_base idx_base)
 {
-    int lid = hipThreadIdx_x & (WFSIZE - 1);
-    int wid = hipThreadIdx_x / WFSIZE;
+    const auto tol_sq = tol * tol;
+    int        lid    = hipThreadIdx_x & (WFSIZE - 1);
+    int        wid    = hipThreadIdx_x / WFSIZE;
 
     __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
     __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
@@ -146,6 +147,18 @@ void csric0_hash_kernel(rocsparse_int m,
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
+        //
+        // Row has numerical singular diagonal
+        if((rocsparse_real(diag_val) <= tol) && (rocsparse_imag(diag_val) == 0))
+        {
+            if(lid == 0)
+            {
+                // We are looking for the first singular pivot
+                rocsparse_atomic_min(singular_pivot, local_col + idx_base);
+            }
+
+            // Don't skip this row if it has a singular pivot
+        }
 
         // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
@@ -160,17 +173,6 @@ void csric0_hash_kernel(rocsparse_int m,
             break;
         }
 
-        // Row has numerical singular diagonal
-        if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= tol))
-        {
-            if(lid == 0)
-            {
-                // We are looking for the first singular pivot
-                rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-            }
-
-            // Don't skip this row if it has a singular pivot
-        }
         // Compute reciprocal
         diag_val = static_cast<T>(1) / diag_val;
 
@@ -223,17 +225,18 @@ void csric0_hash_kernel(rocsparse_int m,
     // Last lane processes the diagonal entry
     if(lid == (WFSIZE - 1))
     {
-        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
+        // if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
+        if((row_diag >= 0))
         {
             const T diag_val = csr_val[row_diag] - sum;
 
             // test for negative value and numerical small value
-            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol * tol)))
+            if((rocsparse_real(diag_val) <= (tol_sq)) && (rocsparse_imag(diag_val) == 0))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             }
 
-            csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
+            csr_val[row_diag] = sqrt(rocsparse_abs(diag_val));
             if(csr_val[row_diag] == static_cast<T>(0))
             {
                 rocsparse_atomic_min(zero_pivot, (row + idx_base));
