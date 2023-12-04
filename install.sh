@@ -27,6 +27,7 @@ function display_help()
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
   echo "    [--rm-legacy-include-dir] Remove legacy include dir Packaging added for file/folder reorg backward compatibility."
+  echo "    [--without-rocblas] Disable building rocSPARSE with rocBLAS."
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -271,6 +272,7 @@ rocm_path=/opt/rocm
 build_relocatable=false
 build_address_sanitizer=false
 build_memstat=false
+build_without_rocblas=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
@@ -283,7 +285,7 @@ build_freorg_bkwdcomp=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,memstat,without-rocblas,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
 
 else
   echo "Need a new version of getopt"
@@ -330,6 +332,9 @@ while true; do
         --memstat)
             build_memstat=true
             shift ;;
+        --without-rocblas)
+            build_without_rocblas=true
+            shift ;;
         -k|--relwithdebinfo)
             build_release=false
             build_release_debug=true
@@ -371,7 +376,7 @@ done
 # If matrices_dir_install has been set up then install matrices dir and exit.
 #
 if ! [[ "${matrices_dir_install}" == "" ]];then
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc"  -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc"  -DPROJECT_BINARY_DIR=${matrices_dir_install} -DCMAKE_MATRICES_DIR=${matrices_dir_install} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
     exit 0
 fi
 
@@ -388,7 +393,7 @@ if ! [[ "${matrices_dir}" == "" ]];then
     # Let's 'reinstall' to the specified location to check if all good
     # Will be fast if everything already exists as expected.
     # This is to prevent any empty directory.
-    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc" -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -P ./cmake/ClientMatrices.cmake
+    cmake -DCMAKE_CXX_COMPILER="${rocm_path}/bin/hipcc" -DCMAKE_C_COMPILER="${rocm_path}/bin/hipcc" -DPROJECT_BINARY_DIR=${matrices_dir} -DCMAKE_MATRICES_DIR=${matrices_dir} -DROCM_PATH=${rocm_path} -DCMAKE_INSTALL_LIBDIR=lib -P ./cmake/ClientMatrices.cmake
 fi
 
 build_dir=./build
@@ -485,6 +490,11 @@ pushd .
   # memstat
   if [[ "${build_memstat}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DBUILD_MEMSTAT=ON"
+  fi
+
+  # without-rocblas
+  if [[ "${build_without_rocblas}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DBUILD_WITHOUT_ROCBLAS=ON"
   fi
 
   # freorg backward compatible support enable

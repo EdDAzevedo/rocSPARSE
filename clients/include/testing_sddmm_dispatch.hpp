@@ -351,47 +351,104 @@ private:
 public:
     static void testing_sddmm_bad_arg(const Arguments& arg)
     {
-        T alpha = 0.6;
-        T beta  = 0.1;
+        const T     local_alpha = 0.6;
+        const T     local_beta  = 0.1;
+        const void* alpha       = (const void*)&local_alpha;
+        const void* beta        = (const void*)&local_beta;
 
         rocsparse_local_handle local_handle;
 
         rocsparse_handle    handle  = local_handle;
         rocsparse_operation trans_A = rocsparse_operation_none;
         rocsparse_operation trans_B = rocsparse_operation_none;
-        const void*         p_alpha = (const void*)&alpha;
-        const void*         p_beta  = (const void*)&beta;
         rocsparse_sddmm_alg alg     = rocsparse_sddmm_alg_default;
-        size_t              buffer_size;
-        size_t*             p_buffer_size = &buffer_size;
-        void*               temp_buffer   = (void*)0x4;
-        rocsparse_datatype  ttype         = get_datatype<T>();
+        size_t              local_buffer_size;
+        size_t*             buffer_size  = &local_buffer_size;
+        void*               temp_buffer  = (void*)0x4;
+        rocsparse_datatype  compute_type = get_datatype<T>();
 
-#define PARAMS_BUFFER_SIZE                                                              \
-    handle, trans_A, trans_B, p_alpha, (const rocsparse_dnmat_descr&)A,                 \
-        (const rocsparse_dnmat_descr&)B, p_beta, (rocsparse_spmat_descr&)C, ttype, alg, \
-        p_buffer_size
+#define PARAMS_BUFFER_SIZE \
+    handle, trans_A, trans_B, alpha, A, B, beta, C, compute_type, alg, buffer_size
 
-#define PARAMS                                                                          \
-    handle, trans_A, trans_B, p_alpha, (const rocsparse_dnmat_descr&)A,                 \
-        (const rocsparse_dnmat_descr&)B, p_beta, (rocsparse_spmat_descr&)C, ttype, alg, \
-        temp_buffer
+#define PARAMS handle, trans_A, trans_B, alpha, A, B, beta, C, compute_type, alg, temp_buffer
 
         //
         // AUTOMATIC BAD ARGS.
         //
         {
-            device_dense_matrix<T> dA, dB;
-            rocsparse_local_dnmat  A(dA), B(dB);
-
+            device_dense_matrix<T>  dA, dB;
+            rocsparse_local_dnmat   local_A(dA), local_B(dB);
             device_sparse_matrix<T> dC;
-            rocsparse_local_spmat   C(dC);
+            rocsparse_local_spmat   local_C(dC);
+
+            rocsparse_dnmat_descr A = local_A;
+            rocsparse_dnmat_descr B = local_B;
+            rocsparse_spmat_descr C = local_C;
 
             static constexpr int num_to_exclude             = 1;
             static constexpr int to_exclude[num_to_exclude] = {10};
-            auto_testing_bad_arg(rocsparse_sddmm_buffer_size, PARAMS_BUFFER_SIZE);
-            auto_testing_bad_arg(rocsparse_sddmm_preprocess, num_to_exclude, to_exclude, PARAMS);
-            auto_testing_bad_arg(rocsparse_sddmm, num_to_exclude, to_exclude, PARAMS);
+            bad_arg_analysis(rocsparse_sddmm_buffer_size, PARAMS_BUFFER_SIZE);
+            select_bad_arg_analysis(rocsparse_sddmm_preprocess, num_to_exclude, to_exclude, PARAMS);
+            select_bad_arg_analysis(rocsparse_sddmm, num_to_exclude, to_exclude, PARAMS);
+        }
+
+        // conjugate transpose
+        {
+            device_dense_matrix<T> dA, dB;
+            rocsparse_local_dnmat  local_A(dA), local_B(dB);
+
+            device_sparse_matrix<T> dC;
+            rocsparse_local_spmat   local_C(dC);
+
+            rocsparse_dnmat_descr A = local_A;
+            rocsparse_dnmat_descr B = local_B;
+            rocsparse_spmat_descr C = local_C;
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            trans_B = rocsparse_operation_none;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_preprocess(PARAMS),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_not_implemented);
+
+            trans_A = rocsparse_operation_none;
+            trans_B = rocsparse_operation_conjugate_transpose;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_buffer_size(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm_preprocess(PARAMS),
+                                    rocsparse_status_not_implemented);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_not_implemented);
+
+            trans_A = rocsparse_operation_none;
+            trans_B = rocsparse_operation_none;
+        }
+
+        // buffer size
+        {
+            device_dense_matrix<T> dA, dB;
+            rocsparse_local_dnmat  local_A(dA), local_B(dB);
+
+            device_sparse_matrix<T> dC(10, 10, 10, rocsparse_index_base_zero);
+            rocsparse_local_spmat   local_C(dC);
+
+            rocsparse_dnmat_descr A = local_A;
+            rocsparse_dnmat_descr B = local_B;
+            rocsparse_spmat_descr C = local_C;
+
+            alg         = rocsparse_sddmm_alg_dense;
+            temp_buffer = nullptr;
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_sddmm(PARAMS), rocsparse_status_invalid_pointer);
+
+            alg         = rocsparse_sddmm_alg_default;
+            temp_buffer = (void*)0x4;
         }
 
 #undef PARAMS
@@ -406,12 +463,22 @@ public:
         rocsparse_operation  trans_A = arg.transA;
         rocsparse_operation  trans_B = arg.transB;
         rocsparse_index_base base    = arg.baseA;
-        rocsparse_sddmm_alg  alg     = rocsparse_sddmm_alg_default;
+        rocsparse_sddmm_alg  alg     = arg.sddmm_alg;
         rocsparse_datatype   ttype   = get_datatype<T>();
         rocsparse_order      order_A = arg.order;
         rocsparse_order      order_B = arg.order;
         // Create rocsparse handle
         rocsparse_local_handle handle(arg);
+
+#ifndef ROCSPARSE_WITH_ROCBLAS
+        if(arg.sddmm_alg == rocsparse_sddmm_alg_dense)
+        {
+            std::cerr
+                << "No BLAS implementation is available, skipping rocsparse_sddmm_alg_dense test."
+                << std::endl;
+            return;
+        }
+#endif
 
         host_scalar<T> h_alpha(arg.get_alpha<T>());
         host_scalar<T> h_beta(arg.get_beta<T>());
@@ -593,6 +660,8 @@ public:
                                 *h_alpha,
                                 display_key_t::beta,
                                 *h_beta,
+                                display_key_t::algorithm,
+                                rocsparse_sddmmalg2string(alg),
                                 display_key_t::gflops,
                                 gpu_gflops,
                                 display_key_t::bandwidth,

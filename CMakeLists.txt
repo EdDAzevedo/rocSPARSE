@@ -75,6 +75,7 @@ option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 option(BUILD_MEMSTAT "Build rocSPARSE with memory statistics enabled" OFF)
 option(BUILD_COMPRESSED_DBG "Enable compressed debug symbols" ON)
+option(BUILD_WITHOUT_ROCBLAS "Disable building rocSPARSE with rocBLAS" OFF)
 
 #
 if(BUILD_CODE_COVERAGE)
@@ -178,13 +179,18 @@ message(STATUS "AMDGPU_TARGETS: ${AMDGPU_TARGETS}")
 
 # Find rocprim package
 find_package(rocprim REQUIRED)
+if (NOT BUILD_WITHOUT_ROCBLAS)
+  find_package(rocblas 4.1.0 QUIET)
+else()
+  message("Build rocSPARSE with rocBLAS is disabled")
+endif()
 
 if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
   find_package( hip REQUIRED CONFIG PATHS ${HIP_DIR} ${ROCM_PATH} /opt/rocm )
 endif( )
 
 # Setup version
-set(VERSION_STRING "3.0.2")
+set(VERSION_STRING "3.1.1")
 set(SOVERSION_STRING "1.0")
 
 rocm_setup_version(VERSION ${VERSION_STRING})
@@ -252,6 +258,12 @@ endif()
 
 # Package specific CPACK vars
 rocm_package_add_dependencies(DEPENDS "hip-rocclr >= 3.5.0")
+if (rocblas_FOUND)
+  rocm_package_add_dependencies(DEPENDS "rocblas >= 4.1.0")
+else()
+  message("Build rocSPARSE with rocBLAS is disabled since rocBLAS is not found")
+endif()
+
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 

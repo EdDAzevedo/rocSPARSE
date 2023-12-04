@@ -24,6 +24,11 @@
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
+if (rocblas_FOUND)
+  message("Build rocSPARSE client with rocBLAS")
+  add_compile_options(-DROCSPARSE_WITH_ROCBLAS)
+endif()
+
 # Consider removing this in the future
 # This should appear before the project command, because it does not use FORCE
 if(WIN32)
@@ -98,7 +103,7 @@ if(BUILD_CLIENTS_TESTS)
   if(NOT CONVERT_SOURCE)
     set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
   endif()
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe RESULT_VARIABLE STATUS)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -L${ROCM_PATH}/${CMAKE_INSTALL_LIBDIR} -Wl,--enable-new-dtags,--build-id=sha1,--rpath,$ENV{ROCM_EXE_RPATH} -o ${PROJECT_BINARY_DIR}/mtx2csr.exe RESULT_VARIABLE STATUS)
   if(STATUS AND NOT STATUS EQUAL 0)
     message(FATAL_ERROR "mtx2csr.exe failed to build, aborting.")
   endif()

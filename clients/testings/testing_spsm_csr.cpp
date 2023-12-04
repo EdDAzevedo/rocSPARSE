@@ -146,6 +146,23 @@ void testing_spsm_csr(const Arguments& arg)
     I nnz_A;
     matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz_A, base);
 
+    //
+    // Scale values.
+    //
+    {
+        const size_t       size = hcsr_val.size();
+        floating_data_t<T> mx   = floating_data_t<T>(0);
+        for(size_t i = 0; i < size; ++i)
+        {
+            mx = std::max(mx, std::abs(hcsr_val[i]));
+        }
+        mx = floating_data_t<T>(1.0) / mx;
+        for(size_t i = 0; i < size; ++i)
+        {
+            hcsr_val[i] *= mx;
+        }
+    }
+
     J B_m = (trans_B == rocsparse_operation_none) ? M : K;
     J B_n = (trans_B == rocsparse_operation_none) ? K : M;
 
@@ -332,22 +349,81 @@ void testing_spsm_csr(const Arguments& arg)
         // CPU csrsm
         J analysis_pivot = -1;
         J solve_pivot    = -1;
-        host_csrsm<I, J, T>(M,
-                            K,
-                            nnz_A,
-                            trans_A,
-                            trans_B,
-                            halpha,
-                            hcsr_row_ptr,
-                            hcsr_col_ind,
-                            hcsr_val,
-                            hC_gold,
-                            ldc,
-                            diag,
-                            uplo,
-                            base,
-                            &analysis_pivot,
-                            &solve_pivot);
+        if(K > 1)
+        {
+            host_csrsm<I, J, T>(M,
+                                K,
+                                nnz_A,
+                                trans_A,
+                                trans_B,
+                                halpha,
+                                hcsr_row_ptr,
+                                hcsr_col_ind,
+                                hcsr_val,
+                                hC_gold,
+                                ldc,
+                                diag,
+                                uplo,
+                                base,
+                                &analysis_pivot,
+                                &solve_pivot);
+        }
+        else
+        {
+            if(K > 0)
+            {
+                if(trans_B == rocsparse_operation_none)
+                {
+                    host_dense_matrix<T> hx(hC_gold.m, hC_gold.n);
+                    host_dense_matrix<T> hy(hC_gold.m, hC_gold.n);
+                    hx.transfer_from(hC_gold);
+                    host_csrsv<I, J, T>(trans_A,
+                                        M,
+                                        nnz_A,
+                                        halpha,
+                                        hcsr_row_ptr,
+                                        hcsr_col_ind,
+                                        hcsr_val,
+                                        hx,
+                                        hy,
+                                        diag,
+                                        uplo,
+                                        base,
+                                        &analysis_pivot,
+                                        &solve_pivot);
+                    hC_gold.transfer_from(hy);
+                }
+                else
+                {
+                    host_dense_matrix<T> hx(hC_gold.m, hC_gold.n);
+                    host_dense_matrix<T> hy(hC_gold.m, hC_gold.n);
+                    hx.transfer_from(hC_gold);
+                    host_csrsv<I, J, T>(trans_A,
+                                        M,
+                                        nnz_A,
+                                        halpha,
+                                        hcsr_row_ptr,
+                                        hcsr_col_ind,
+                                        hcsr_val,
+                                        hx,
+                                        hy,
+                                        diag,
+                                        uplo,
+                                        base,
+                                        &analysis_pivot,
+                                        &solve_pivot);
+                    hC_gold.transfer_from(hy);
+                }
+            }
+            else
+            {
+                analysis_pivot = M + 1;
+                solve_pivot    = M + 1;
+                solve_pivot    = std::min(solve_pivot, analysis_pivot);
+                analysis_pivot = (analysis_pivot == M + 1) ? -1 : analysis_pivot;
+                solve_pivot    = (solve_pivot == M + 1) ? -1 : solve_pivot;
+            }
+        }
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {

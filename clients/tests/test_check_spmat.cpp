@@ -36,5 +36,5 @@ TEST_ROUTINE_WITH_CONFIG(check_spmat,
                          arg.matrix_type,
                          arg.uplo,
                          arg.storage,
-                         arg.format,
+                         arg.formatA,
                          arg.matrix);

@@ -35,6 +35,10 @@ if(BUILD_MEMSTAT)
   add_compile_options(-DROCSPARSE_WITH_MEMSTAT)
 endif()
 
+if (rocblas_FOUND)
+  message("Build rocSPARSE library with rocBLAS")
+  add_compile_options(-DROCSPARSE_WITH_ROCBLAS)
+endif()
 
 # Configure a header file to pass the rocSPARSE version
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
@@ -87,6 +91,10 @@ target_include_directories(rocsparse
 
 # Target link libraries
 target_link_libraries(rocsparse PRIVATE roc::rocprim hip::device)
+if (BUILD_WITH_ROCBLAS OR rocblas_FOUND)
+  target_link_libraries(rocsparse PRIVATE roc::rocblas)
+endif()
+
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
 set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
