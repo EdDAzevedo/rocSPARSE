@@ -1080,6 +1080,7 @@ void testing_csric0_extra_dense_matrix(const Arguments& arg)
     host_vector<rocsparse_int> h_solve_pivot_1(1);
     host_vector<rocsparse_int> h_solve_pivot_2(1);
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
+    host_vector<rocsparse_int> h_singular_pivot_gold(1);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
@@ -1179,6 +1180,7 @@ void testing_csric0_extra_dense_matrix(const Arguments& arg)
                            base,
                            h_analysis_pivot_gold,
                            h_solve_pivot_gold,
+                           h_singular_pivot_gold,
                            tol);
     }
 
