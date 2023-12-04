@@ -1,4 +1,3 @@
-#define USE_ORG 1
 /*! \file */
 /* ************************************************************************
  * Copyright (C) 2018-2023 Advanced Micro Devices, Inc. All rights Reserved.
@@ -146,52 +145,13 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
-#ifdef USE_ORG
-        // Numeric boost
-        if(boost)
-        {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
 
-            __threadfence();
-
-            if(lid == 0)
-            {
-                csr_val[local_diag] = diag_val;
-            }
-        }
-        else
-        {
-            // Row has numerical singular diagonal
-            if(rocsparse_abs(diag_val) <= tol)
-            {
-                if(lid == 0)
-                {
-                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-                }
-            }
-
-            // Row has numerical zero diagonal
-            if(diag_val == static_cast<T>(0))
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, local_col + idx_base);
-                }
-
-                // Skip this row if it has a zero pivot
-                break;
-            }
-        }
-#else
-
-        // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
         {
+
             // Skip this row if it has a zero pivot
             break;
         }
-#endif
         csr_val[j] = local_val = local_val / diag_val;
 
         // Loop over the row the current column index depends on
@@ -232,49 +192,46 @@ ROCSPARSE_DEVICE_ILF void csrilu0_hash_kernel(rocsparse_int m,
     // Make sure updated csr_val is written to global memory
     __threadfence();
 
-    const bool is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+    const bool is_diag = (row_diag >= 0);
     if(is_diag)
     {
-        auto       diag_val   = csr_val[row_diag];
-        const auto local_diag = row;
-
+        const auto diag_val     = csr_val[row_diag];
+        const auto abs_diag_val = rocsparse_abs(diag_val);
         if(boost)
         {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
+            const bool is_too_small = (abs_diag_val <= boost_tol);
 
-            __threadfence();
-
-            if(lid == 0)
+            if(is_too_small)
             {
-                csr_val[local_diag] = diag_val;
-            }
+                if(lid == 0)
+                {
+                    csr_val[row_diag] = boost_val;
+                    __threadfence(); // make sure this is written out before ready flag is set
+                };
+            };
         }
         else
         {
+
+            const bool is_singular_pivot = (abs_diag_val <= tol);
+            if(is_singular_pivot)
             {
-                const bool is_singular_pivot = (rocsparse_abs(csr_val[row_diag]) <= tol);
-                if(is_singular_pivot)
+                if(lid == 0)
                 {
-                    if(lid == 0)
-                    {
-                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
-                    }
+                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
                 }
             }
 
+            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+            if(is_zero_pivot)
             {
-                const bool is_zero_pivot = (csr_val[row_diag] == static_cast<T>(0));
-                if(is_zero_pivot)
+                if(lid == 0)
                 {
-                    if(lid == 0)
-                    {
-                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
-                    }
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
                 }
             }
         }
     }
-
     __threadfence();
 
     if(lid == 0)
@@ -373,56 +330,12 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-#ifdef USE_ORG
-        // Numeric boost
-        if(boost)
-        {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
-
-            __threadfence();
-
-            if(lid == 0)
-            {
-                csr_val[local_diag] = diag_val;
-            }
-
-            __threadfence();
-        }
-        else
-        {
-            // Row has numerical singular diagonal
-            if(rocsparse_abs(diag_val) <= tol)
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first singular pivot
-                    rocsparse_atomic_min(singular_pivot, local_col + idx_base);
-                }
-            }
-
-            // Row has numerical zero diagonal
-            if(diag_val == static_cast<T>(0))
-            {
-                if(lid == 0)
-                {
-                    // We are looking for the first zero pivot
-                    rocsparse_atomic_min(zero_pivot, local_col + idx_base);
-                }
-
-                // Skip this row if it has a zero pivot
-                break;
-            }
-        }
-#else
-
-        // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
         {
-
             // Skip this row if it has a zero pivot
             break;
-        }
-#endif
+        };
+
         csr_val[j] = local_val = local_val / diag_val;
 
         // Loop over the row the current column index depends on
@@ -465,46 +378,42 @@ ROCSPARSE_DEVICE_ILF void csrilu0_binsearch_kernel(rocsparse_int m_,
     // Make sure updated csr_val is written to global memory
     __threadfence();
 
-    // check for singular_pivot
-    const bool is_diag = ((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)));
+    const bool is_diag = (row_diag >= 0);
     if(is_diag)
     {
-        auto       diag_val   = csr_val[row_diag];
-        const auto local_diag = row_diag;
-        const auto local_col  = row;
-
+        const auto diag_val     = csr_val[row_diag];
+        const auto abs_diag_val = rocsparse_abs(diag_val);
         if(boost)
         {
-            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
+            const bool is_too_small = (abs_diag_val <= boost_tol);
 
-            __threadfence();
-
-            if(lid == 0)
+            if(is_too_small)
             {
-                csr_val[local_diag] = diag_val;
-            }
+                if(lid == 0)
+                {
+                    csr_val[row_diag] = boost_val;
+                    __threadfence(); // make sure this is written out before ready flag is set
+                };
+            };
         }
         else
         {
+
+            const bool is_singular_pivot = (abs_diag_val <= tol);
+            if(is_singular_pivot)
             {
-                const bool is_singular_pivot = ((rocsparse_abs(csr_val[row_diag]) <= tol));
-                if(is_singular_pivot)
+                if(lid == 0)
                 {
-                    if(lid == 0)
-                    {
-                        rocsparse_atomic_min(singular_pivot, (row + idx_base));
-                    }
+                    rocsparse_atomic_min(singular_pivot, (row + idx_base));
                 }
             }
 
+            const bool is_zero_pivot = (diag_val == static_cast<T>(0));
+            if(is_zero_pivot)
             {
-                const bool is_zero_pivot = ((csr_val[row_diag] == static_cast<T>(0)));
-                if(is_zero_pivot)
+                if(lid == 0)
                 {
-                    if(lid == 0)
-                    {
-                        rocsparse_atomic_min(zero_pivot, (row + idx_base));
-                    }
+                    rocsparse_atomic_min(zero_pivot, (row + idx_base));
                 }
             }
         }

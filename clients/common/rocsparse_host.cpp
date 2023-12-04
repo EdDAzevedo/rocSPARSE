@@ -5949,7 +5949,14 @@ void host_csrilu0(rocsparse_int                     M,
         {
             // set diagonal pointer to diagonal element
             diag_offset[ai] = diag_pos;
-
+            if(boost)
+            {
+                if(std::abs(csr_val[diag_pos]) <= boost_tol)
+                {
+                    csr_val[diag_pos] = boost_val;
+                }
+            }
+            else
             {
                 const rocsparse_int diag_pos = diag_offset[ai];
                 const bool is_diag = (diag_pos >= 0) && (csr_col_ind[diag_pos] == (ai + base));
