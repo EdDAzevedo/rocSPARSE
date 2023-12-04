@@ -1020,7 +1020,6 @@ static void testing_csric0_extra_template(const Arguments& arg)
     }
 }
 
-
 void testing_csric0_extra_dense_matrix(const Arguments& arg)
 {
     rocsparse_int             M    = arg.M;
@@ -1171,13 +1170,17 @@ void testing_csric0_extra_dense_matrix(const Arguments& arg)
         hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // CPU csric0
-    host_csric0<float>(M,
-                       hcsr_row_ptr,
-                       hcsr_col_ind,
-                       hcsr_val_gold,
-                       base,
-                       h_analysis_pivot_gold,
-                       h_solve_pivot_gold);
+    {
+        double tol = 0.0;
+        host_csric0<float>(M,
+                           hcsr_row_ptr,
+                           hcsr_col_ind,
+                           hcsr_val_gold,
+                           base,
+                           h_analysis_pivot_gold,
+                           h_solve_pivot_gold,
+                           tol);
+    }
 
     // Check pivots
     h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
