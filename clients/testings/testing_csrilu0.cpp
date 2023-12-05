@@ -491,9 +491,9 @@ void testing_csrilu0(const Arguments& arg)
     rocsparse_int M = arg.M;
     rocsparse_int N = arg.N;
 
-    rocsparse_analysis_policy apol  = arg.apol;
-    rocsparse_solve_policy    spol  = arg.spol;
-    rocsparse_index_base      base  = arg.baseA;
+    rocsparse_analysis_policy apol = arg.apol;
+    rocsparse_solve_policy    spol = arg.spol;
+    rocsparse_index_base      base = arg.baseA;
 
     const bool                  to_int    = arg.timing ? false : true;
     static constexpr bool       full_rank = true;

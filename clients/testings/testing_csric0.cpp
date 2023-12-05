@@ -1029,10 +1029,12 @@ void testing_csric0_extra_dense_matrix(const Arguments& arg)
     rocsparse_index_base      base = arg.baseA;
 
     {
-    bool has_work = (M >= 1) && (N >= 1);
-    if (!has_work) { return; };
+        bool has_work = (M >= 1) && (N >= 1);
+        if(!has_work)
+        {
+            return;
+        };
     }
-
 
     // Create rocsparse handle
     rocsparse_local_handle handle(arg);
