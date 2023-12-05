@@ -40,9 +40,8 @@ void csric0_hash_kernel(rocsparse_int m,
                         double               tol,
                         rocsparse_index_base idx_base)
 {
-    const auto tol_sq = tol * tol;
-    int        lid    = hipThreadIdx_x & (WFSIZE - 1);
-    int        wid    = hipThreadIdx_x / WFSIZE;
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int wid = hipThreadIdx_x / WFSIZE;
 
     __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
     __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
@@ -66,6 +65,8 @@ void csric0_hash_kernel(rocsparse_int m,
     {
         return;
     }
+
+    const auto tol_sq = tol * tol;
 
     // Current row this wavefront is working on
     rocsparse_int row = map[idx];
@@ -205,7 +206,6 @@ void csric0_hash_kernel(rocsparse_int m,
     // Last lane processes the diagonal entry
     if(lid == WFSIZE - 1)
     {
-        // if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
         if((row_diag >= 0))
         {
             const T diag_val = csr_val[row_diag] - sum;
@@ -254,6 +254,7 @@ void csric0_binsearch_kernel(rocsparse_int m,
     {
         return;
     }
+    const auto tol_sq = tol * tol;
 
     // Current row this wavefront is working on
     rocsparse_int row = map[idx];
@@ -402,13 +403,12 @@ void csric0_binsearch_kernel(rocsparse_int m,
     // Last lane processes the diagonal entry
     if(lid == WFSIZE - 1)
     {
-        if((row_diag >= 0) && (csr_col_ind[row_diag] == (row + idx_base)))
+        if((row_diag >= 0))
         {
             const T diag_val = csr_val[row_diag] - sum;
 
             // check for negative value and numerical small value
-            const double tolXtol = tol * tol;
-            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tolXtol)))
+            if((rocsparse_imag(diag_val) == 0) && (rocsparse_real(diag_val) <= (tol_sq)))
             {
                 rocsparse_atomic_min(singular_pivot, (row + idx_base));
             }
